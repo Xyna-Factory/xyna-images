@@ -48,12 +48,12 @@ RUN chown -R ${XYNA_USER}:${XYNA_USER} /var/log/xyna
 # create files in /etc/opt/xyna/environment: xynaContainer.properties  black_edition_001.properties and xynaContainer.component.properties
 RUN cd /tmp \
     # 
-	&& unzip XynaFactory* \
-	&& rm XynaFactory*.zip \
-	&& mv XynaFactory* XynaFactoryBundle \
-	&& cp XynaFactoryBundle/XynaFactory_* XynaBlackEdition.zip \
-	&& cp XynaFactoryBundle/XBE_Pre* XBE_Prerequisites.zip \
-	# 
+    && unzip XynaFactory* \
+    && rm XynaFactory*.zip \
+    && mv XynaFactory* XynaFactoryBundle \
+    && cp XynaFactoryBundle/XynaFactory_* XynaBlackEdition.zip \
+    && cp XynaFactoryBundle/XBE_Pre* XBE_Prerequisites.zip \
+    # 
     && unzip XBE_Prerequisites* \
     && rm XBE_Prerequisites.zip \
     && mv XBE_Prerequisites* XBE_Prerequisites \
@@ -62,7 +62,7 @@ RUN cd /tmp \
     && printf $PREREQ_INSTALL_PARAMS | XBE_Prerequisites/install_prerequisites.sh -x \
     && unzip XynaBlackEdition.zip \
     && rm XynaBlackEdition.zip \
-	&& ls \
+    && ls \
     && mv XynaFactory_* XynaBlackEdition \
     && chown ${XYNA_USER}:${XYNA_USER} XynaBlackEdition \
     && chown -R ${XYNA_USER}:${XYNA_USER} /etc/opt/xyna/environment/ \

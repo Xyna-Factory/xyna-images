@@ -7,4 +7,4 @@ For building a Xyna dockerimage you have to:
 
 ### xynaprod
 * After building a base image, one can build production image.
-* Therefor run docker build in xynaprod folder with argument --build-arg XYNABASE_IMAGE=xynabase:<Tag>.
+* Therefor run docker build in xynaprod folder with argument --build-arg XYNABASE_IMAGE=xynabase:\<Tag\>.

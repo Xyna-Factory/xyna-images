@@ -15,8 +15,8 @@
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # syntax=docker/dockerfile:1
-ARG IMAGE
-FROM ${IMAGE}
+ARG XYNABASE_IMAGE
+FROM ${XYNABASE_IMAGE}
 
 COPY --chown=${XYNA_USER}:${XYNA_USER} GitIntegration*.app /tmp/
 

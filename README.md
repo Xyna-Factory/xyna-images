@@ -8,3 +8,7 @@ For building a Xyna dockerimage you have to:
 ### xynaprod
 * After building a base image, one can build production image.
 * Therefor run docker build in xynaprod folder with argument --build-arg XYNABASE_IMAGE=xynabase:\<Tag\>.
+
+### xynadev
+* Build GitIntegation-application by running ant build in xyna-factory/xyna-factory/modules/xmcp/gitintegration and copy result into /xynadev
+* Run docker build in xynadev folder with argument --build-arg XYNABASE_IMAGE=xynabase:\<Tag\>.

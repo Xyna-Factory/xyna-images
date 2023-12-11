@@ -31,6 +31,8 @@ ENV JAVA_HOME=/usr/lib/jvm/zulu${JAVA_VERSION}
 ENV PATH="$JAVA_HOME/bin:$PATH"
 
 COPY os /tmp/os
+
+RUN chmod -R +x /tmp/os
 RUN ls -l /tmp/os
 RUN /tmp/os/install_os_packages.sh -o ${OS_IMAGE} -j ${JAVA_VERSION}
 

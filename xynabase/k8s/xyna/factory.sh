@@ -26,6 +26,11 @@ $SCRIPT_DIR/prepareenvironment.sh
 
 # includes pre start script, implemented by projects
 $SCRIPT_DIR/factoryprestart.sh
+RET=$?
+if [[ $RET != 0 ]]; then
+  echo "ERROR during prestart"
+  exit $RET
+fi
 
 
 # start xyna factory
@@ -44,6 +49,13 @@ while [ $STOPPED = false ]; do
     STARTUP=true
     # execute post start script, implemented by projects
     $SCRIPT_DIR/poststart.sh
+    RET=$?
+    if [[ $RET != 0 ]]; then
+      echo "ERROR during poststart"
+      ${XYNA_PATH}/server/xynafactory.sh stop
+      echo "ERROR stopped factory after error in poststart"
+      exit $RET
+    fi
   fi
   if [ "$STATE" == "Status: 'Starting'" ]; then
     STARTING=true

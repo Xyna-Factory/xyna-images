@@ -1,3 +1,4 @@
+#!/bin/bash
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Copyright 2023 Xyna GmbH, Germany
 #
@@ -14,7 +15,6 @@
 # limitations under the License.
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
  
-#!/bin/bash
 #nohup /usr/sbin/rsyslogd -n &
 
 # execute sub scripts

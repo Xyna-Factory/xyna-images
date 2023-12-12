@@ -1,3 +1,4 @@
+#!/bin/bash
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Copyright 2023 Xyna GmbH, Germany
 #

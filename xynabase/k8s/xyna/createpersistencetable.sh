@@ -1,3 +1,4 @@
+#!/bin/bash
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Copyright 2023 Xyna GmbH, Germany
 #
@@ -14,7 +15,6 @@
 # limitations under the License.
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-#!/bin/bash
 #input: sourcedir file targetdir script
 
 if [[ $# < 4 ]] ;

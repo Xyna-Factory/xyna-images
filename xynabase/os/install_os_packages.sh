@@ -1,3 +1,4 @@
+#!/bin/bash
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Copyright 2023 Xyna GmbH, Germany
 #
@@ -14,7 +15,6 @@
 # limitations under the License.
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-#!/bin/bash
 OS_IMAGE=""
 JAVA_VERSION=""
 
@@ -60,7 +60,7 @@ if [[ ${OS_IMAGE} == oraclelinux:* ]]; then
 elif [[ ${OS_IMAGE} == ubuntu:* ]]; then
     apt -y update
     apt -y upgrade
-    apt-get -y install zip patch wget netcat-traditional xinetd net-tools bind9utils vim less dc libxml2-utils gnupg ca-certificates curl
+    apt-get -y install zip unzip patch wget netcat-traditional xinetd net-tools bind9utils vim less dc libxml2-utils gnupg ca-certificates curl
     curl -s https://repos.azul.com/azul-repo.key | gpg --dearmor -o /usr/share/keyrings/azul.gpg
     echo "deb [signed-by=/usr/share/keyrings/azul.gpg] https://repos.azul.com/zulu/deb stable main" | tee /etc/apt/sources.list.d/zulu.list
     apt -y update

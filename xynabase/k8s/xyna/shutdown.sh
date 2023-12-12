@@ -1,3 +1,4 @@
+#!/bin/bash
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Copyright 2023 Xyna GmbH, Germany
 #
@@ -13,8 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
- 
-#!/bin/bash
+
 XYNAFACTORY_SH="${XYNA_PATH}/server/xynafactory.sh"
 STATE=$($XYNAFACTORY_SH status)
 if [ "$STATE" == "Status: 'Up and running'" ]

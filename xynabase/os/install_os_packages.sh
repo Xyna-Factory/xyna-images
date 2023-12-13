@@ -48,7 +48,7 @@ fi
 if [[ ${OS_IMAGE} == oraclelinux:* ]]; then
     yum install -y https://cdn.azul.com/zulu/bin/zulu-repo-1.0.0-1.noarch.rpm
     yum -y update
-        yum -y upgrade
+    yum -y upgrade
     yum install -y zip unzip patch wget openssl nc which net-tools passwd rsyslog bind-utils vim less telnet procps bc diffutils hostname perl
     if [[ ${OS_IMAGE} == oraclelinux:7* ]]; then
         yum install -y xinetd

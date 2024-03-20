@@ -71,6 +71,11 @@ for PREFIX in "${PREFIXES[@]}"; do
     COUNT=11
     KEY="name"
     FROM=$(grep -n "<$KEY>$PREFIX</$KEY>" "$XMLFILEPATH" | cut -d: -f1)
+    if [[ $FROM == ""  ]]; then
+      echo "WARN: Could not find pool '$PREFIX'"
+      continue
+    fi
+
     TO=$((FROM + COUNT - 1))
     BLOCK=$(head -n $TO "$XMLFILEPATH" | tail -$COUNT)
 

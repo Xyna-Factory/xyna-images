@@ -64,6 +64,8 @@ jobs:
           context: xynabase
           push: false
           load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           build-args: |
               PREREQ_INSTALL_PARAMS=${{ steps.tags.outputs.PREREQ_INSTALL_PARAMS }}
               OS_IMAGE=${{ matrix.base-image }}
@@ -75,8 +77,10 @@ jobs:
       with:
           context: xynaprod
           push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           build-args: |
-              XYNABASE_IMAGE=xynabase:${{ steps.tags.outputs.BASE_IMAGE_NAME }}-${{ steps.tags.outputs.RUNS_AT }}
+              XYNABASE_IMAGE=${{ steps.base-image-build.outputs.digest }}
           tags: xynaprod:${{ steps.tags.outputs.BASE_IMAGE_NAME }}-${{ steps.tags.outputs.RUNS_AT }}
 
     - name: Build dev image for ${{ matrix.base-image }}
@@ -84,6 +88,8 @@ jobs:
       with:
           context: xynadev
           push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           build-args: |
-              XYNABASE_IMAGE=xynabase:${{ steps.tags.outputs.BASE_IMAGE_NAME }}-${{ steps.tags.outputs.RUNS_AT }}
+              XYNABASE_IMAGE=${{ steps.base-image-build.outputs.digest }}
           tags: xynadev:${{ steps.tags.outputs.BASE_IMAGE_NAME }}-${{ steps.tags.outputs.RUNS_AT }}

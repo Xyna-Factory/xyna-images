@@ -86,7 +86,7 @@ jobs:
           push: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          build-context: |
+          build-contexts: |
               xynabase=oci-layout://${{ github.workspace }}/local-images@${{ steps.base-image-build.outputs.digest }}
           build-args: |
               XYNABASE_IMAGE=xynabase

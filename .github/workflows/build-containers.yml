@@ -47,7 +47,7 @@ jobs:
           echo "BASE_IMAGE_NAME=$BASE_IMAGE_NAME" >> "$GITHUB_OUTPUT"
           RUNS_AT=$(date -u +"%Y%m%dT%H%M%SZ")
           echo "RUNS_AT=$RUNS_AT" >> "$GITHUB_OUTPUT"
-          source xynabase/build.shx
+          source xynabase/build.sh
           echo "PREREQ_INSTALL_PARAMS=$PREREQ_INSTALL_PARAMS" >> "$GITHUB_OUTPUT"
 
     # https://github.com/marketplace/actions/build-and-push-docker-image

@@ -24,6 +24,11 @@ jobs:
            base-image: ["oraclelinux:7", "oraclelinux:9", "ubuntu:22.04"]
            
     steps:
+    - name: Check out repo
+      uses: actions/checkout@v4
+      with:
+        repository: Xyna-Factory/xyna-images
+      
     - name: Download Xyna Factory artifact
       id: download
       uses: actions/download-artifact@v4
@@ -34,11 +39,6 @@ jobs:
          github-token: ${{ github.token }}
          repository: Xyna-Factory/xyna-factory
 
-    - name: Check out repo
-      uses: actions/checkout@v4
-      with:
-        repository: Xyna-Factory/xyna-images
-      
     - name: Move Xyna artifact and get Tags
       id: tags
       run: |

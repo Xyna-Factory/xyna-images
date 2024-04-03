@@ -75,7 +75,7 @@ jobs:
           context: xynaprod
           push: false
           build-args: |
-              XYNABASE_IMAGE=${{ steps.base-image-build.imageid }}
+              XYNABASE_IMAGE=xynabase:${{ steps.tags.outputs.BASE_IMAGE_NAME }}-${{ steps.tags.outputs.RUNS_AT }}
           tags: xynaprod:${{ steps.tags.outputs.BASE_IMAGE_NAME }}-${{ steps.tags.outputs.RUNS_AT }}
 
     - name: Build dev image for ${{ matrix.base-image }}
@@ -84,5 +84,5 @@ jobs:
           context: xynadev
           push: false
           build-args: |
-              XYNABASE_IMAGE=${{ steps.base-image-build.imageid }}
+              XYNABASE_IMAGE=xynabase:${{ steps.tags.outputs.BASE_IMAGE_NAME }}-${{ steps.tags.outputs.RUNS_AT }}
           tags: xynadev:${{ steps.tags.outputs.BASE_IMAGE_NAME }}-${{ steps.tags.outputs.RUNS_AT }}

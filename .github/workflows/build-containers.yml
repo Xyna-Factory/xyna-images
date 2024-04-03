@@ -52,6 +52,7 @@ jobs:
           echo "RUNS_AT=$RUNS_AT" >> "$GITHUB_OUTPUT"
           eval $(grep -E '^[A-Z]+' $GITHUB_WORKSPACE/xynabase/build.sh)
           echo "PREREQ_INSTALL_PARAMS=$PREREQ_INSTALL_PARAMS" >> "$GITHUB_OUTPUT"
+          mkdir -p ${GITHUB_WORKSPACE}/local-images
 
     # https://github.com/marketplace/actions/build-and-push-docker-image
     - name: Set up Docker Buildx
@@ -64,7 +65,7 @@ jobs:
           context: xynabase
           push: false
           outputs: |
-              type=oci,dest=${{ github.workspace }}
+              type=oci,dest=${{ github.workspace }}/local-images/xynabase-image.tar
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
@@ -73,6 +74,11 @@ jobs:
               JAVA_VERSION=11
           tags: xynabase:${{ steps.tags.outputs.BASE_IMAGE_NAME }}-${{ steps.tags.outputs.RUNS_AT }}
 
+    - name: unzip intermediate image
+      run: |
+           cd ${GITHUB_WORKSPACE}/local-images
+           tar xvf xynabase-image.tar
+    
     - name: Build prod image for ${{ matrix.base-image }}
       uses: docker/build-push-action@v5
       with:
@@ -81,7 +87,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-context: |
-              xynabase=oci-layout://${{ github.workspace }}@${{ steps.base-image-build.outputs.digest }}
+              xynabase=oci-layout://${{ github.workspace }}/local-images@${{ steps.base-image-build.outputs.digest }}
           build-args: |
               XYNABASE_IMAGE=xynabase
           tags: xynaprod:${{ steps.tags.outputs.BASE_IMAGE_NAME }}-${{ steps.tags.outputs.RUNS_AT }}
@@ -94,7 +100,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-contexts: |
-             xynabase=oci-layout://${{ github.workspace }}@${{ steps.base-image-build.outputs.digest }}
+             xynabase=oci-layout://${{ github.workspace }}/local-images@${{ steps.base-image-build.outputs.digest }}
           build-args: |
               XYNABASE_IMAGE=xynabase
           tags: xynadev:${{ steps.tags.outputs.BASE_IMAGE_NAME }}-${{ steps.tags.outputs.RUNS_AT }}

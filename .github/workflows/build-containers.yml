@@ -58,7 +58,7 @@ jobs:
           context: xynabase
           push: false
           build-args: |
-              PREREQ_INSTALL_PARAMS=${{ steps-tags.outputs.PREREQ_INSTALL_PARAMS }}
+              PREREQ_INSTALL_PARAMS=${{ steps.tags.outputs.PREREQ_INSTALL_PARAMS }}
               OS_IMAGE=${{ matrix.base-image }}
               JAVA_VERSION=11
           tags: xynabase:${{ steps.tags.outputs.BASE_IMAGE_NAME }}-${{ steps.tags.outputs.RUNS_AT }}

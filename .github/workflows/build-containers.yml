@@ -9,11 +9,11 @@ on:
             type: string
 
   workflow_dispatch:
-    inputs:
-      run-id:
-        description: 'ID of worklow run creating the artifact'
-        required: true
-        type: string
+     inputs:
+         run-id:
+             description: 'ID of worklow run creating the artifact'
+             required: true
+             type: string
         
 jobs:
   build-containers:
@@ -78,7 +78,7 @@ jobs:
       run: |
            cd ${GITHUB_WORKSPACE}/local-images
            tar xvf xynabase-image.tar
-    
+
     - name: Build prod image for ${{ matrix.base-image }}
       uses: docker/build-push-action@v5
       with:

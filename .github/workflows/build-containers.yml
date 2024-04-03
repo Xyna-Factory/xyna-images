@@ -61,7 +61,7 @@ jobs:
               PREREQ_INSTALL_PARAMS=${{ steps-tags.outputs.PREREQ_INSTALL_PARAMS }}
               OS_IMAGE=${{ matrix.base-image }}
               JAVA_VERSION=11
-          tags: xynabase:${{ steps.tags.outputs.BASE_IMAGE_NAME }}-${{ steps-tags.outputs.RUNS_AT }}
+          tags: xynabase:${{ steps.tags.outputs.BASE_IMAGE_NAME }}-${{ steps.tags.outputs.RUNS_AT }}
 
     - name: Build prod image for ${{ matrix.base-image }}
       uses: docker/build-push-action@v5
@@ -70,7 +70,7 @@ jobs:
           push: false
           build-args: |
               XYNABASE_IMAGE=${{ steps.base-image-build.imageid }}
-          tags: xynaprod:${{ steps.tags.outputs.BASE_IMAGE_NAME }}-${{ steps-tags.outputs.RUNS_AT }}
+          tags: xynaprod:${{ steps.tags.outputs.BASE_IMAGE_NAME }}-${{ steps.tags.outputs.RUNS_AT }}
 
     - name: Build dev image for ${{ matrix.base-image }}
       uses: docker/build-push-action@v5
@@ -79,4 +79,4 @@ jobs:
           push: false
           build-args: |
               XYNABASE_IMAGE=${{ steps.base-image-build.imageid }}
-          tags: xynadev:${{ steps.tags.outputs.BASE_IMAGE_NAME }}-${{ steps-tags.outputs.RUNS_AT }}
+          tags: xynadev:${{ steps.tags.outputs.BASE_IMAGE_NAME }}-${{ steps.tags.outputs.RUNS_AT }}

@@ -44,7 +44,7 @@ jobs:
       run: |
           cd ${{ steps.download.outputs.download-path }}
           tar xvf XynaFactory*.tar && rm -f XynaFactory*.tar
-          zip XynaFactory_v.zip XynaFactory*
+          zip -r XynaFactory_v.zip XynaFactory*
           mv XynaFactory_v.zip $GITHUB_WORKSPACE/xynabase
           BASE_IMAGE_NAME=$(echo -n ${{ matrix.base-image }} | sed 's/[:.]/-/g' )
           echo "BASE_IMAGE_NAME=$BASE_IMAGE_NAME" >> "$GITHUB_OUTPUT"

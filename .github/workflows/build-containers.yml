@@ -30,6 +30,7 @@ jobs:
       with:
          path: downloads
          run-id: ${{ inputs.run-id }}
+         github-token: ${{ github.token }}
          repository: Xyna-Factory/xyna-factory
 
     - name: Check out repo

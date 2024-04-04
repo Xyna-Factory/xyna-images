@@ -4,16 +4,16 @@ on:
   # to be called from xyna-factory repo
   workflow_call:
     inputs:
-        artifact-url:
+        run-id:
             required: true
             type: string
 
   workflow_dispatch:
-    inputs:
-      artifact-url:
-        description: 'URL zu XynaFactory*.tar.zip'
-        required: true
-        type: string
+     inputs:
+         run-id:
+             description: 'ID of worklow run creating the artifact'
+             required: true
+             type: string
         
 jobs:
   build-containers:
@@ -24,59 +24,83 @@ jobs:
            base-image: ["oraclelinux:7", "oraclelinux:9", "ubuntu:22.04"]
            
     steps:
-    - name: Download Xyna Factory artifact
-      run: |
-          wget ${{ inputs.artifact-url }} && \
-          unzip XynaFactory*.zip  && \
-          rm -f XynaFactory*.zip && \
-          tar xvf XynaFactory*.tar && \
-          rm -f XynaFactory*.tar && \
-          zip XynaFactory_v.zip XynaFactory*
-
     - name: Check out repo
       uses: actions/checkout@v4
+      with:
+        repository: Xyna-Factory/xyna-images
       
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+    - name: Download Xyna Factory artifact
+      id: download
+      uses: actions/download-artifact@v4
+      with:
+         path: downloads
+         merge-multiple: true
+         run-id: ${{ inputs.run-id }}
+         github-token: ${{ github.token }}
+         repository: Xyna-Factory/xyna-factory
 
-    - name: Move Xyna and get Tags
+    - name: Move Xyna artifact and get Tags
       id: tags
       run: |
-          mv XynaFactory_v.zip xynabase
+          cd ${{ steps.download.outputs.download-path }}
+          tar xvf XynaFactory*.tar && rm -f XynaFactory*.tar
+          zip -r XynaFactory_v.zip XynaFactory*
+          mv XynaFactory_v.zip $GITHUB_WORKSPACE/xynabase
           BASE_IMAGE_NAME=$(echo -n ${{ matrix.base-image }} | sed 's/[:.]/-/g' )
           echo "BASE_IMAGE_NAME=$BASE_IMAGE_NAME" >> "$GITHUB_OUTPUT"
           RUNS_AT=$(date -u +"%Y%m%dT%H%M%SZ")
           echo "RUNS_AT=$RUNS_AT" >> "$GITHUB_OUTPUT"
-          source xynabase/build.sh
+          eval $(grep -E '^[A-Z]+' $GITHUB_WORKSPACE/xynabase/build.sh)
           echo "PREREQ_INSTALL_PARAMS=$PREREQ_INSTALL_PARAMS" >> "$GITHUB_OUTPUT"
+          mkdir -p ${GITHUB_WORKSPACE}/local-images
 
     # https://github.com/marketplace/actions/build-and-push-docker-image
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
     - name: Build base image for ${{ matrix.base-image }}
       id: base-image-build
       uses: docker/build-push-action@v5
       with:
           context: xynabase
           push: false
+          outputs: |
+              type=oci,dest=${{ github.workspace }}/local-images/xynabase-image.tar
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           build-args: |
-              PREREQ_INSTALL_PARAMS=${{ steps-tags.outputs.PREREQ_INSTALL_PARAMS }}
+              PREREQ_INSTALL_PARAMS=${{ steps.tags.outputs.PREREQ_INSTALL_PARAMS }}
               OS_IMAGE=${{ matrix.base-image }}
               JAVA_VERSION=11
           tags: xynabase:${{ steps.tags.outputs.BASE_IMAGE_NAME }}-${{ steps.tags.outputs.RUNS_AT }}
+
+    - name: unzip intermediate image
+      run: |
+           cd ${GITHUB_WORKSPACE}/local-images
+           tar xvf xynabase-image.tar
 
     - name: Build prod image for ${{ matrix.base-image }}
       uses: docker/build-push-action@v5
       with:
           context: xynaprod
           push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-contexts: |
+              xynabase=oci-layout://${{ github.workspace }}/local-images@${{ steps.base-image-build.outputs.digest }}
           build-args: |
-              XYNABASE_IMAGE=${{ steps.base-image-build.imageid }}
+              XYNABASE_IMAGE=xynabase
           tags: xynaprod:${{ steps.tags.outputs.BASE_IMAGE_NAME }}-${{ steps.tags.outputs.RUNS_AT }}
 
-    - name: Build dev image for ${{ matrix.base-image }}
-      uses: docker/build-push-action@v5
-      with:
-          context: xynadev
-          push: false
-          build-args: |
-              XYNABASE_IMAGE=${{ steps.base-image-build.imageid }}
-          tags: xynadev:${{ steps.tags.outputs.BASE_IMAGE_NAME }}-${{ steps.tags.outputs.RUNS_AT }}
+    #- name: Build dev image for ${{ matrix.base-image }}
+    #  uses: docker/build-push-action@v5
+    #  with:
+    #      context: xynadev
+    #      push: false
+    #      cache-from: type=gha
+    #      cache-to: type=gha,mode=max
+    #      build-contexts: |
+    #         xynabase=oci-layout://${{ github.workspace }}/local-images@${{ steps.base-image-build.outputs.digest }}
+    #      build-args: |
+    #          XYNABASE_IMAGE=xynabase
+    #      tags: xynadev:${{ steps.tags.outputs.BASE_IMAGE_NAME }}-${{ steps.tags.outputs.RUNS_AT }}

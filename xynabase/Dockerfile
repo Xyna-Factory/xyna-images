@@ -98,7 +98,7 @@ RUN ${XYNA_PATH}/server/xynafactory.sh start \
     && until ${XYNA_PATH}/server/xynafactory.sh -q status; do echo "########## $? waiting..."; sleep 10; done \
     && ${XYNA_PATH}/server/xynafactory.sh version | head -1 | awk '{print $5}' > ${XYNA_PATH}/server/version.txt \
     && ${XYNA_PATH}/server/xynafactory.sh stop \
-    && until ${XYNA_PATH}/server/xynafactory.sh status | grep -q "Not running"; do echo "########## $? waiting..."; sleep 10; done \
+    && until ${XYNA_PATH}/server/xynafactory.sh status | grep -q "Not running"; do echo "########## $? waiting..."; sleep 10; done
 
 WORKDIR ${XYNA_PATH}/server
 COPY --chown=${XYNA_USER}:${XYNA_USER} configlog.sh /tmp/

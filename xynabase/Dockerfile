@@ -49,12 +49,12 @@ RUN chown -R ${XYNA_USER}:${XYNA_USER} /var/log/xyna
 # create files in /etc/opt/xyna/environment: xynaContainer.properties  black_edition_001.properties and xynaContainer.component.properties
 RUN cd /tmp \
     #
-        && unzip XynaFactory* \
-        && rm XynaFactory*.zip \
-        && mv XynaFactory* XynaFactoryBundle \
-        && cp XynaFactoryBundle/XynaFactory_* XynaBlackEdition.zip \
-        && cp XynaFactoryBundle/XBE_Pre* XBE_Prerequisites.zip \
-        #
+    && unzip XynaFactory* \
+    && rm XynaFactory*.zip \
+    && mv XynaFactory* XynaFactoryBundle \
+    && cp XynaFactoryBundle/XynaFactory_* XynaBlackEdition.zip \
+    && cp XynaFactoryBundle/XBE_Pre* XBE_Prerequisites.zip \
+    #
     && unzip XBE_Prerequisites* \
     && rm XBE_Prerequisites.zip \
     && mv XBE_Prerequisites* XBE_Prerequisites \
@@ -95,8 +95,10 @@ RUN chmod -R +x /k8s \
 
 
 RUN ${XYNA_PATH}/server/xynafactory.sh start \
+    && until ${XYNA_PATH}/server/xynafactory.sh -q status; do echo "########## $? waiting..."; sleep 10; done \
     && ${XYNA_PATH}/server/xynafactory.sh version | head -1 | awk '{print $5}' > ${XYNA_PATH}/server/version.txt \
-    && ${XYNA_PATH}/server/xynafactory.sh stop
+    && ${XYNA_PATH}/server/xynafactory.sh stop \
+    && until ${XYNA_PATH}/server/xynafactory.sh status | grep -q "Not running"; do echo "########## $? waiting..."; sleep 10; done \
 
 WORKDIR ${XYNA_PATH}/server
 COPY --chown=${XYNA_USER}:${XYNA_USER} configlog.sh /tmp/

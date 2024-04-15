@@ -26,6 +26,7 @@ RUN mkdir ${XYNA_PATH}/tmp \
 
 # configure persistence layers and table configuration
 RUN ./xynafactory.sh start \
+    && until ./xynafactory.sh -q status; do echo "########## $? waiting..."; sleep 10; done \
     && ./xynafactory.sh instantiatepersistencelayer -persistenceLayerName memory -department xyna -connectionType HISTORY -persistenceLayerInstanceName CacheForHISTORYwriteable -persistenceLayerSpecifics map \
     && ./xynafactory.sh instantiatepersistencelayer -persistenceLayerName xml -department xyna -connectionType HISTORY -persistenceLayerInstanceName HISTORYwriteable -persistenceLayerSpecifics HISTORYwriteable true true CacheForHISTORYwriteable true \
     && ./xynafactory.sh registertable -c -persistenceLayerInstanceName HISTORYwriteable -tableName xynaproperties \
@@ -49,6 +50,7 @@ RUN ./xynafactory.sh start \
     && ./xynafactory.sh registertable -c -persistenceLayerInstanceName DEFAULTwriteable -tableName filterinstances \
     && ./xynafactory.sh set xyna.rmi.interlink.port.communication 1098 \
     && ./xynafactory.sh stop \
+    && until ./xynafactory.sh status | grep -q "Not running"; do echo "########## $? waiting..."; sleep 10; done \
     && rm ./storage/Configuration/xynaproperties.xml \
     && rm ./storage/defaultHISTORY/application.xml \
     && rm ./storage/defaultHISTORY/applicationentries.xml \

@@ -1,6 +1,6 @@
 #!/bin/bash
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Copyright 2023 Xyna GmbH, Germany
+# Copyright 2024 Xyna GmbH, Germany
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ if (( $RESULT == 2 )); then
   fi
   
   NEWVERSION=$(${XYNA_PATH}/server/xynafactory.sh version | awk '{print $5}' | head -n 1)
-  VERSIONLINES=$(./xynafactory.sh version | wc -l)
+  VERSIONLINES=$(${XYNA_PATH}/server/xynafactory.sh version | wc -l)
   
   echo "stop xynafactory"
   ${XYNA_PATH}/server/xynafactory.sh stop

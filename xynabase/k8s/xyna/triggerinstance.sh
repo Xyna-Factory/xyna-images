@@ -1,6 +1,6 @@
 #!/bin/bash
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Copyright 2023 Xyna GmbH, Germany
+# Copyright 2024 Xyna GmbH, Germany
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +15,12 @@
 # limitations under the License.
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+# if these environment variables are set, modify triggerinstances.xml entries acordingly:
+#  TRIGGERINSTANCE_XMLFILEPATH - triggerinstances.xml file location relative to the storage folder
+#  TRIGGERINSTANCE_MOUNTDIRECTORY - directory containing files with the following naming scheme:
+#    <revision>_<triggerinstancename>.<key> where key can be startparameter or state
+#
+#
 # example entry within triggerinstances.xml:
 #
 #  <triggerinstances>
@@ -30,8 +36,11 @@
 # e.g. 50_Http
 # configure startparameter: Filename: "50_Http.startparameter" content: "4245:"
 
+echo "$0 INFO: $0: modify triggerinstances.xml entries"
+echo "$0 INFO: env: TRIGGERINSTANCE_XMLFILEPATH: $TRIGGERINSTANCE_XMLFILEPATH"
+echo "$0 INFO: env: TRIGGERINSTANCE_MOUNTDIRECTORY: $TRIGGERINSTANCE_MOUNTDIRECTORY"
 if [ "$TRIGGERINSTANCE_XMLFILEPATH" == "" ] || [ "$TRIGGERINSTANCE_MOUNTDIRECTORY" == "" ]; then
-  echo "$0 environment variables TRIGGERINSTANCE_XMLFILEPATH and TRIGGERINSTANCE_MOUNTDIRECTORY have to be defined."
+  echo "$0 INFO: environment variables TRIGGERINSTANCE_XMLFILEPATH and TRIGGERINSTANCE_MOUNTDIRECTORY have to be defined."
   exit 0
 fi
 
@@ -40,7 +49,7 @@ MOUNTDIRECTORY="$TRIGGERINSTANCE_MOUNTDIRECTORY/*"
 
 # abort, if file does not exist
 if [ ! -f "$XMLFILEPATH" ]; then
-    echo "warning: $XMLFILEPATH not found!"
+    echo "$0 WARN: $XMLFILEPATH not found!"
     exit 0
 fi
 
@@ -77,6 +86,12 @@ for PREFIX in "${PREFIXES[@]}"; do
     COUNT=7
     KEY="id"
     FROM=$(grep -n "<$KEY>$PREFIX</$KEY>" "$XMLFILEPATH" | cut -d: -f1)
+
+    if [[ $FROM == ""  ]]; then
+      echo "$0 WARN: Could not find triggerinstance width id '$PREFIX'"
+      continue
+    fi
+
     TO=$((FROM + COUNT - 1))
     BLOCK=$(head -n $TO "$XMLFILEPATH" | tail -$COUNT)
 
@@ -87,10 +102,10 @@ for PREFIX in "${PREFIXES[@]}"; do
         SPLITREV=(${TAGKEYREV/./ })
         SPLIT0=$(echo ${SPLITREV[1]} | rev)
         TAGKEY=$(echo ${SPLITREV[0]} | rev)
-		
-		#adjust to key
-		[[ $SPLIT0 =~ $NAMEREGEX ]]
-		SPLIT0="${BASH_REMATCH[2]}#${BASH_REMATCH[1]}"
+
+        #adjust to key
+        [[ $SPLIT0 =~ $NAMEREGEX ]]
+        SPLIT0="${BASH_REMATCH[2]}#${BASH_REMATCH[1]}"
 
         ## if file matches prefix
         if [ $SPLIT0 == $PREFIX ]; then
@@ -103,15 +118,17 @@ for PREFIX in "${PREFIXES[@]}"; do
                     NEWLINE=$(echo "$LINE" | sed "s!<$TAGKEY.*!<$TAGKEY>$TAGVALUE</$TAGKEY>!")
                     sed -i "$IDX s!.*!$NEWLINE!" "$XMLFILEPATH"
                     REPLACED=true
+                    echo "$0 INFO: set $TAGKEY for triggerinstance $PREFIX"
                 fi
                 IDX=$((IDX + 1))
             done <<< "$BLOCK"
 
             if [ $REPLACED = false ]; then
-                echo "warning: could not find <$TAGKEY> tag within $PREFIX"
+                echo "$0 WARN: could not find <$TAGKEY> tag within $PREFIX"
             fi
         fi
     done
 done
 
+echo "$0 INFO: done"
 exit 0

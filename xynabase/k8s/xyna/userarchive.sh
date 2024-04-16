@@ -1,6 +1,6 @@
 #!/bin/bash
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Copyright 2023 Xyna GmbH, Germany
+# Copyright 2024 Xyna GmbH, Germany
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,8 +15,23 @@
 # limitations under the License.
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-
-# example entry within pooldefinition.xml:
+# if these environment variables are set, modify userarchive.xml entries acordingly:
+#  USERARCHIVE_XMLFILEPATH - userarchive.xml file location relative to the storage folder
+#  USERARCHIVE_MOUNTDIRECTORY - directory containing files with the following naming scheme:
+#    <username>.<key> where key can be role, password, creationData, locked, domains, failedLogins, passwordChangeDate and passwordChangeReason
+#    the file content will be used to set the value in userarchive.xml. The password will be encrypted.
+#    if passwords are set, the following additional requirements have to be fulfilled:
+#      * environment variable XYNAPROPERTIES_MOUNTDIRECTORY has to be specified
+#      * the following files need to exist in $XYNAPROPERTIES_MOUNTDIRECTORY and contain valid values:
+#      * * xyna.xfmg.xopctrl.usermanagement.login.hashalgorithm.propertyvalue
+#      * * xyna.xfmg.xopctrl.usermanagement.login.rounds.propertyvalue
+#      * * xyna.xfmg.xopctrl.usermanagement.login.staticsalt.propertyvalue
+#      * * xyna.xfmg.xopctrl.usermanagement.persistence.hashalgorithm.propertyvalue
+#      * * xyna.xfmg.xopctrl.usermanagement.persistence.rounds.propertyvalue
+#      * * xyna.xfmg.xopctrl.usermanagement.persistence.salt.length.propertyvalue
+#
+#
+# example entry within userarchive.xml:
 #
 # <userarchive>
 #     <name>XYNAMODELLER</name>
@@ -30,9 +45,12 @@
 #     <passwordChangeReason>NEW_USER</passwordChangeReason>
 # </userarchive>
 
-
+echo "$0 INFO: $0: modify userarchive.xml entries"
+echo "$0 INFO: env: USERARCHIVE_XMLFILEPATH: $USERARCHIVE_XMLFILEPATH"
+echo "$0 INFO: env: USERARCHIVE_MOUNTDIRECTORY: $USERARCHIVE_MOUNTDIRECTORY"
 if [ "$USERARCHIVE_XMLFILEPATH" == "" ] || [ "$USERARCHIVE_MOUNTDIRECTORY" == "" ]; then
-  echo "$0 environment variables USERARCHIVE_XMLFILEPATH and USERARCHIVE_MOUNTDIRECTORY have to be defined."
+  echo "$0 INFO: environment variables USERARCHIVE_XMLFILEPATH and USERARCHIVE_MOUNTDIRECTORY have to be defined."
+  echo "$0 INFO: done"
   exit 0
 fi
 
@@ -71,6 +89,12 @@ for PREFIX in "${PREFIXES[@]}"; do
     COUNT=11
     KEY="name"
     FROM=$(grep -n "<$KEY>$PREFIX</$KEY>" "$XMLFILEPATH" | cut -d: -f1)
+
+    if [[ $FROM == ""  ]]; then
+      echo "$0 WARN: Could not find user '$PREFIX'"
+      continue
+    fi
+
     TO=$((FROM + COUNT - 1))
     BLOCK=$(head -n $TO "$XMLFILEPATH" | tail -$COUNT)
 
@@ -99,6 +123,7 @@ for PREFIX in "${PREFIXES[@]}"; do
                     NEWLINE=$(echo "$LINE" | sed "s#<$TAGKEY>.*</$TAGKEY>#<$TAGKEY>$TAGVALUE</$TAGKEY>#")
                     sed -i "$IDX s#.*#$NEWLINE#" "$XMLFILEPATH"
                     REPLACED=true
+                    echo "$0 INFO: set <$TAGKEY> for user $PREFIX"
                 fi
                 if [[ $LINE =~ ^.*\<password\> ]]; then
                     PASSWORDLINE=$LINE
@@ -108,7 +133,7 @@ for PREFIX in "${PREFIXES[@]}"; do
             done <<< "$BLOCK"
 
             if [ $REPLACED = false ]; then
-                echo "warning: could not find <$TAGKEY> tag within $PREFIX"
+                echo "$0 WARN: could not find tag <$TAGKEY> within $PREFIX"
             fi
         fi
     done
@@ -148,3 +173,6 @@ for PREFIX in "${PREFIXES[@]}"; do
         sed -i "$PASSWORDIDX s#.*#$NEWLINE#" "$XMLFILEPATH"
     fi
 done
+
+echo "$0 INFO: done"
+exit 0

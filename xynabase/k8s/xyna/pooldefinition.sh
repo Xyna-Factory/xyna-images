@@ -112,11 +112,16 @@ for PREFIX in "${PREFIXES[@]}"; do
                 UUID=$TAGVALUE
             fi
 
+            # escape &
+            TAGVALUE="${TAGVALUE//\&/\\\&}"
+
             IDX=FROM
             REPLACED=false
             while IFS= read -r LINE; do
                 if [[ $LINE =~ ^.*\<$TAGKEY\> ]]; then
                     NEWLINE=$(echo "$LINE" | sed "s#<$TAGKEY>.*</$TAGKEY>#<$TAGKEY>$TAGVALUE</$TAGKEY>#")
+                    # escape &
+                    NEWLINE="${NEWLINE//\&/\\\&}"
                     sed -i "$IDX s#.*#$NEWLINE#" "$XMLFILEPATH"
                     REPLACED=true
                     echo "$0 INFO: set <$TAGKEY> for pool $PREFIX"

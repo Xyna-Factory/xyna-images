@@ -139,7 +139,7 @@ for PREFIX in "${PREFIXES[@]}"; do
     done
 
     # replace password with encrypted password, if set
-    if [ $PASSWORD ] && [ $PASSWORDLINE ]; then
+    if [ "$PASSWORD" ] && [ "$PASSWORDLINE" ]; then
         # get password algorithm parameters from xyna properties
         LOGIN_HASHALGORITHM="?"
         LOGIN_ROUNDS="?"

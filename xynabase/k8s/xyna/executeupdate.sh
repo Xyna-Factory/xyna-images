@@ -24,7 +24,7 @@ $SCRIPT_DIR/prepareenvironment.sh
 $SCRIPT_DIR/validateversion.sh $PVPATH/storage/version.txt ${XYNA_PATH}/server/version.txt
 RESULT=$?
 
-echo "result from validateversion (0=no update, 1=error, 2=update, 3=new environment): $RESULT"
+echo "$0 INFO: result from validateversion (0=no update, 1=error, 2=update, 3=new environment): $RESULT"
 if (( $RESULT == 0 )); then
   # no update required
   exit 0
@@ -37,40 +37,44 @@ fi
 
 if (( $RESULT == 2 )); then
   # update
-  echo "Update detected. Copy files from persistent volume to server/storage."
+  echo "$0 INFO: Update detected. Copy files from persistent volume ($PVPATH/storage) to server/storage."
   for FILE in $PVPATH/storage/*; do
     FILENAME=$(basename $FILE)
-	
-	#skip version.txt
-	if [ -f $PVPATH/storage/$FILENAME ]; then
-	  continue
-	fi
-	
-	mkdir -p ${XYNA_PATH}/server/storage/$FILENAME
-    cp -r  $PVPATH/storage/$FILENAME/* ${XYNA_PATH}/server/storage/$FILENAME
+
+    #skip version.txt
+    if [ -f $PVPATH/storage/$FILENAME ]; then
+      continue
+    fi
+
+    mkdir -p ${XYNA_PATH}/server/storage/$FILENAME
+    
+    # do not attempt to copy empty directories
+    if [ "$(ls -A $PVPATH/storage/$FILENAME)" ]; then
+      cp -r  $PVPATH/storage/$FILENAME/* ${XYNA_PATH}/server/storage/$FILENAME
+    fi
   done
   
   # prepare factory start
-  echo "call factoryprestart.sh"
+  echo "$0 INFO: call factoryprestart.sh"
   $SCRIPT_DIR/factoryprestart.sh
   
-  echo "start xynafactory"
+  echo "$0 INFO: start xynafactory"
   ${XYNA_PATH}/server/xynafactory.sh start
   
   STATE=$(${XYNA_PATH}/server/xynafactory.sh status)
   if [ "$STATE" == "Status: 'Not running'" ]; then
-    echo "ERROR factory could not apply update!"
-	exit 1
+    echo "$0 ERROR: factory could not apply update!"
+    exit 1
   fi
   
   NEWVERSION=$(${XYNA_PATH}/server/xynafactory.sh version | awk '{print $5}' | head -n 1)
   VERSIONLINES=$(${XYNA_PATH}/server/xynafactory.sh version | wc -l)
   
-  echo "stop xynafactory"
+  echo "$0 INFO: stop xynafactory"
   ${XYNA_PATH}/server/xynafactory.sh stop
   #check if update was successful
   if (( $VERSIONLINES == 2 )); then
-    echo "update was successful."
+    echo "$0 INFO: update was successful."
     for FILE in $PVPATH/next/*; do
 	  FILENAME=$(basename $FILE)
       rm -rf $PVPATH/storage/$FILENAME
@@ -78,17 +82,17 @@ if (( $RESULT == 2 )); then
     done
     rm $PVPATH/storage/version.txt
     echo "$NEWVERSION" >> $PVPATH/storage/version.txt
-    echo "update to $NEWVERSION finished."
-	exit 0
+    echo "$0 INFO: update to $NEWVERSION finished. Files from $PVPATH/next copied to $PVPATH/storage."
+    exit 0
   else
-    echo "update failed."
-	echo $NEWVERSION
-	exit 1
+    echo "$0 ERROR: update failed."
+    echo "$0 ERROR: version read from xynafactory.sh version: $NEWVERSION"
+    exit 1
   fi
 fi
 
 if (( $RESULT == 0 )); then
   # new environment => should not happen, becuase even in that usecase, the first init countainer should have created files in $PVPATH/storage
-  echo "Error: New environment detected. First init counter should have created $PVPATH/storage"
+  echo "$0 Error: New environment detected. First init counter should have created $PVPATH/storage"
   exit 1
 fi

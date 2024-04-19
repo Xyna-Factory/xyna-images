@@ -1,6 +1,6 @@
 #!/bin/bash
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Copyright 2023 Xyna GmbH, Germany
+# Copyright 2024 Xyna GmbH, Germany
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +15,13 @@
 # limitations under the License.
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+# if these environment variables are set, modify pooldefinition.xml entries acordingly:
+#  POOLDEFINITION_XMLFILEPATH - pooldefinition.xml file location relative to the storage folder
+#  POOLDEFINITION_MOUNTDIRECTORY - directory containing files with the following naming scheme:
+#    <poolname>.<key> where key can be type, size, user, password, retries, params, validationinterval, connectstring
+#    the file content will be used to set the value in pooldefinition.xml. The password will be encrypted.
+#
+# 
 # example entry within pooldefinition.xml:
 #
 # <pooldefinition>
@@ -31,8 +38,12 @@
 #     <uuid>55ebd1fe-2cb3-4224-b354-84c8f60ff0f8</uuid>
 # </pooldefinition>
 
+echo "$0 INFO: $0: modify pooldefinition.xml entries"
+echo "$0 INFO: env: POOLDEFINITION_XMLFILEPATH: $POOLDEFINITION_XMLFILEPATH"
+echo "$0 INFO: env: POOLDEFINITION_MOUNTDIRECTORY: $POOLDEFINITION_MOUNTDIRECTORY"
 if [ "$POOLDEFINITION_XMLFILEPATH" == "" ] || [ "$POOLDEFINITION_MOUNTDIRECTORY" == "" ]; then
-  echo "$0 environment variables POOLDEFINITION_XMLFILEPATH and POOLDEFINITION_MOUNTDIRECTORY have to be defined."
+  echo "$0 INFO: environment variables POOLDEFINITION_XMLFILEPATH and POOLDEFINITION_MOUNTDIRECTORY have to be defined."
+  echo "$0 INFO: done"
   exit 0
 fi
 
@@ -41,7 +52,7 @@ MOUNTDIRECTORY="$POOLDEFINITION_MOUNTDIRECTORY/*"
 
 # abort, if file does not exist
 if [ ! -f "$XMLFILEPATH" ]; then
-    echo "warning: $XMLFILEPATH not found!"
+    echo "$0: WARN: $XMLFILEPATH not found!"
     exit 0
 fi
 
@@ -72,7 +83,7 @@ for PREFIX in "${PREFIXES[@]}"; do
     KEY="name"
     FROM=$(grep -n "<$KEY>$PREFIX</$KEY>" "$XMLFILEPATH" | cut -d: -f1)
     if [[ $FROM == ""  ]]; then
-      echo "WARN: Could not find pool '$PREFIX'"
+      echo "$0 WARN: Could not find pool '$PREFIX'"
       continue
     fi
 
@@ -101,13 +112,19 @@ for PREFIX in "${PREFIXES[@]}"; do
                 UUID=$TAGVALUE
             fi
 
+            # escape &
+            TAGVALUE="${TAGVALUE//\&/\\\&}"
+
             IDX=FROM
             REPLACED=false
             while IFS= read -r LINE; do
                 if [[ $LINE =~ ^.*\<$TAGKEY\> ]]; then
                     NEWLINE=$(echo "$LINE" | sed "s#<$TAGKEY>.*</$TAGKEY>#<$TAGKEY>$TAGVALUE</$TAGKEY>#")
+                    # escape &
+                    NEWLINE="${NEWLINE//\&/\\\&}"
                     sed -i "$IDX s#.*#$NEWLINE#" "$XMLFILEPATH"
                     REPLACED=true
+                    echo "$0 INFO: set <$TAGKEY> for pool $PREFIX"
                 fi
                 if [[ $LINE =~ ^.*\<password\> ]]; then
                     PASSWORDLINE=$LINE
@@ -121,7 +138,7 @@ for PREFIX in "${PREFIXES[@]}"; do
             done <<< "$BLOCK"
 
             if [ $REPLACED = false ]; then
-                echo "warning: could not find <$TAGKEY> tag within $PREFIX"
+                echo "$0 WARN: could not find tag <$TAGKEY> within pool $PREFIX"
             fi
         fi
     done
@@ -146,3 +163,6 @@ for PREFIX in "${PREFIXES[@]}"; do
         sed -i "$PASSWORDIDX s#.*#$NEWLINE#" "$XMLFILEPATH"
     fi
 done
+
+echo "$0 INFO: done" 
+exit 0

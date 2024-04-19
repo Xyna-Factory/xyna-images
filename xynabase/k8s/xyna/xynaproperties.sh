@@ -1,6 +1,6 @@
 #!/bin/bash
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Copyright 2023 Xyna GmbH, Germany
+# Copyright 2024 Xyna GmbH, Germany
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,14 @@
 # limitations under the License.
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-
+# if these environment variables are set, modify xynaproperties.xml entries acordingly:
+#  XYNAPROPERTIES_XMLFILEPATH - xynaproperties.xml file location relative to the storage folder
+#  XYNAPROPERTIES_MOUNTDIRECTORY - directory containing files with the following naming scheme:
+#    <propertyname>.propertyvalue
+#    the file content will be used to set the value of the property.
+# new properties are aded, if they do not exist already.
+#
+# 
 # example entry within xynaproperties.xml:
 #
 # <xynaproperties>
@@ -33,19 +40,23 @@ function f_determine_tag_position () {
   re='^[0-9]+$'
   if ! [[ $FROM =~ $re ]] ; then
     FROM=$(grep -n "</xynapropertiesTable>" "$XMLFILEPATH" | cut -d: -f1) # current position of closing xynapropertiesTable tag
-	sed -i "$FROM i </xynaproperties>" "$XMLFILEPATH"
-	sed -i "$FROM i <binding>0</binding>" "$XMLFILEPATH"
-	sed -i "$FROM i <remoteAccessSpecificParams></remoteAccessSpecificParams>" "$XMLFILEPATH"
-	sed -i "$FROM i <factorycomponent>false</factorycomponent>" "$XMLFILEPATH"
-	sed -i "$FROM i <propertydocumentation/>" "$XMLFILEPATH"
-	sed -i "$FROM i <propertyvalue></propertyvalue>" "$XMLFILEPATH"
-	sed -i "$FROM i <propertykey>$PREFIX</propertykey>" "$XMLFILEPATH"
-	sed -i "$FROM i <xynaproperties>" "$XMLFILEPATH"
+    sed -i "$FROM i </xynaproperties>" "$XMLFILEPATH"
+    sed -i "$FROM i <binding>0</binding>" "$XMLFILEPATH"
+    sed -i "$FROM i <remoteAccessSpecificParams></remoteAccessSpecificParams>" "$XMLFILEPATH"
+    sed -i "$FROM i <factorycomponent>false</factorycomponent>" "$XMLFILEPATH"
+    sed -i "$FROM i <propertydocumentation/>" "$XMLFILEPATH"
+    sed -i "$FROM i <propertyvalue></propertyvalue>" "$XMLFILEPATH"
+    sed -i "$FROM i <propertykey>$PREFIX</propertykey>" "$XMLFILEPATH"
+    sed -i "$FROM i <xynaproperties>" "$XMLFILEPATH"
   fi
 }
 
+echo "$0 INFO: $0: modify and add xynaproperties.xml entries"
+echo "$0 INFO: env: XYNAPROPERTIES_XMLFILEPATH: $XYNAPROPERTIES_XMLFILEPATH"
+echo "$0 INFO: env: XYNAPROPERTIES_MOUNTDIRECTORY: $XYNAPROPERTIES_MOUNTDIRECTORY"
 if [ "$XYNAPROPERTIES_XMLFILEPATH" == "" ] || [ "$XYNAPROPERTIES_MOUNTDIRECTORY" == "" ]; then
-  echo "$0 environment variables XYNAPROPERTIES_XMLFILEPATH and XYNAPROPERTIES_MOUNTDIRECTORY have to be defined."
+  echo "$0 INFO: environment variables XYNAPROPERTIES_XMLFILEPATH and XYNAPROPERTIES_MOUNTDIRECTORY have to be defined."
+  echo "$0 INFO: done"
   exit 0
 fi
 
@@ -54,7 +65,7 @@ MOUNTDIRECTORY="$XYNAPROPERTIES_MOUNTDIRECTORY/*"
 
 # abort, if file does not exist
 if [ ! -f "$XMLFILEPATH" ]; then
-    echo "warning: $XMLFILEPATH not found!"
+    echo "$0 WARN: $XMLFILEPATH not found!"
     exit 0
 fi
 
@@ -83,9 +94,8 @@ for PREFIX in "${PREFIXES[@]}"; do
     # extract sub-tags belonging to xml entry
     COUNT=5
     KEY="propertykey"
-    #FROM=$(grep -n "<$KEY>$PREFIX</$KEY>" "$XMLFILEPATH" | cut -d: -f1)
     f_determine_tag_position
-	TO=$((FROM + COUNT - 1))
+    TO=$((FROM + COUNT - 1))
     BLOCK=$(head -n $TO "$XMLFILEPATH" | tail -$COUNT)
 
     # for each file in config directory
@@ -114,13 +124,17 @@ for PREFIX in "${PREFIXES[@]}"; do
                     NEWLINE=$(echo "$LINE" | sed "s#<$TAGKEY>.*</$TAGKEY>#<$TAGKEY>$TAGVALUE</$TAGKEY>#")
                     sed -i "$IDX s#.*#$NEWLINE#" "$XMLFILEPATH"
                     REPLACED=true
+                    echo "$0 INFO: set <$TAGKEY> for xynaproperty $PREFIX"
                 fi
                 IDX=$((IDX + 1))
             done <<< "$BLOCK"
 
             if [ $REPLACED = false ]; then
-                echo "warning: could not find <$TAGKEY> tag within $PREFIX"
+                echo "$0 WARN: could not find <$TAGKEY> tag within $PREFIX"
             fi
         fi
     done
 done
+
+echo "$0 INFO: done"
+exit 0

@@ -1,6 +1,6 @@
 #!/bin/bash
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Copyright 2023 Xyna GmbH, Germany
+# Copyright 2024 Xyna GmbH, Germany
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,20 +15,24 @@
 # limitations under the License.
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-
+# if these environment variables are set, modify or add internetaddress.xml entries acordingly:
+#  IPADDRESS_XMLFILEPATH - internetaddress.xml file location relative to the storage folder
+#  IPADDRESS_MOUNTDIRECTORY - directory containing files with the following naming scheme:
+#    <id>.<key> where key can be id, ip or documentation
+#
+#
 #  <internetaddress>
 #    <id>someIP</id>
 #    <ip>1.1.1.1</ip>
+#    <documentation>documentation</documentation>
 #  </internetaddress>
 
 
 
 function f_determine_tag_position () {
   FROM=$(grep -n "<$KEY>$PREFIX</$KEY>" "$XMLFILEPATH" | cut -d: -f1)
-  echo "found <$KEY>$PREFIX</$KEY> at line '$FROM'"
   re='^[0-9]+$'
   if ! [[ $FROM =~ $re ]] ; then
-    echo "adding internetaddress"
     FROM=$(grep -n "</internetaddressTable>" "$XMLFILEPATH" | cut -d: -f1) # current position of closing internetaddressTable tag
     sed -i "$FROM i </internetaddress>" "$XMLFILEPATH"
     sed -i "$FROM i <documentation></documentation>" "$XMLFILEPATH"
@@ -40,10 +44,12 @@ function f_determine_tag_position () {
   fi
 }
 
+echo "$0 INFO: $0: modify ipaddress.xml entries"
+echo "$0 INFO: env: IPADDRESS_XMLFILEPATH: $IPADDRESS_XMLFILEPATH"
+echo "$0 INFO: env: IPADDRESS_MOUNTDIRECTORY: $IPADDRESS_MOUNTDIRECTORY"
 if [ "$IPADDRESS_XMLFILEPATH" == "" ] || [ "$IPADDRESS_MOUNTDIRECTORY" == "" ]; then
-  echo "$0 environment variables IPADDRESS_XMLFILEPATH and IPADDRESS_MOUNTDIRECTORY have to be defined."
-  echo "$0 IPADDRESS_XMLFILEPATH: $IPADDRESS_XMLFILEPATH"
-  echo "$0 IPADDRESS_MOUNTDIRECTORY: $IPADDRESS_MOUNTDIRECTORY"
+  echo "$0 INFO: environment variables IPADDRESS_XMLFILEPATH and IPADDRESS_MOUNTDIRECTORY have to be defined."
+  echo "$0 INFO: done"
   exit 0
 fi
 
@@ -52,7 +58,7 @@ MOUNTDIRECTORY="$IPADDRESS_MOUNTDIRECTORY/*"
 
 # create file if it does not exist
 if [ ! -f "$XMLFILEPATH" ]; then
-    echo "warning: $XMLFILEPATH not found! Creating it."
+    echo "$0 WARN: $XMLFILEPATH not found! Creating it."
     touch $XMLFILEPATH
     echo '<?xml version="1.0" encoding="UTF-8" standalone="no"?>' >> $XMLFILEPATH
     echo '<internetaddressTable transaction="0">' >> $XMLFILEPATH
@@ -118,16 +124,17 @@ for PREFIX in "${PREFIXES[@]}"; do
                     IDINDEX=$IDX
                 fi
 
-                if [[ $LINE =~ ^.*\<$TAGKEY\> ]] && [[ $TARGETKEY != "id" ]]; then
+                if [[ $LINE =~ ^.*\<$TAGKEY\> ]] && [[ $TAGKEY != "id" ]]; then
                     NEWLINE=$(echo "$LINE" | sed "s#<$TAGKEY>.*</$TAGKEY>#<$TAGKEY>$TAGVALUE</$TAGKEY>#")
                     sed -i "$IDX s#.*#$NEWLINE#" "$XMLFILEPATH"
                     REPLACED=true
+                    echo "$0 INFO: set $TAGKEY for ipaddress $PREFIX"
                 fi
                 IDX=$((IDX + 1))
             done <<< "$BLOCK"
 
-            if [ $REPLACED = false ]; then
-                echo "warning: could not find <$TAGKEY> tag within $PREFIX"
+            if [ $REPLACED = false ] && [[ $TAGKEY != "id" ]]; then
+                echo "$0 WARN: could not find tag <$TAGKEY> within $PREFIX"
             fi
         fi
     done
@@ -135,7 +142,9 @@ for PREFIX in "${PREFIXES[@]}"; do
     if [ $ID ] && [ $IDLINE ] && [ $IDINDEX ]; then
         NEWLINE=$(echo "$IDLINE" | sed "s#<id>.*</id>#<id>$ID</id>#")
         sed -i "$IDLINE s#.*#$NEWLINE#" "$XMLFILEPATH"
+        echo "$0 INFO: updated id of ip address $PREFIX to $ID"
     fi
-
-
 done
+
+echo "$0 INFO: done"
+exit 0

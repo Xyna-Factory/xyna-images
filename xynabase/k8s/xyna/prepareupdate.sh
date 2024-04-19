@@ -1,6 +1,6 @@
 #!/bin/bash
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Copyright 2023 Xyna GmbH, Germany
+# Copyright 2024 Xyna GmbH, Germany
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ $SCRIPT_DIR/prepareenvironment.sh
 
 $SCRIPT_DIR/validateversion.sh $PVPATH/storage/version.txt ${XYNA_PATH}/server/version.txt
 RESULT=$?
-echo "result from validateversion (0=no update, 1=error, 2=update, 3=new environment): $RESULT"
+echo "$0 INFO: result from validateversion (0=no update, 1=error, 2=update, 3=new environment): $RESULT"
 if (( $RESULT == 0 )); then
   # no update required
   exit 0
@@ -48,7 +48,7 @@ if (( $RESULT == 2 )); then
     cp -r ${XYNA_PATH}/server/storage/$FILENAME $PVPATH/next/$FILENAME
   done
   cp ${XYNA_PATH}/server/version.txt $PVPATH/next/version.txt
-  echo "files copied. Ready for update."
+  echo "$0 INFO: files from ${XYNA_PATH}/server/storage copied to $PVPATH/next. Ready for update."
   exit 0
 fi
 
@@ -61,9 +61,9 @@ if (( $RESULT == 3 )); then
     cp -r ${XYNA_PATH}/server/storage/$FILENAME $PVPATH/storage/$FILENAME
   done
   cp ${XYNA_PATH}/server/version.txt $PVPATH/storage/version.txt
-  echo "files copied. New Environment set."
+  echo "$0 INFO: files from ${XYNA_PATH}/server/storage copied to $PVPATH/storage. New Environment set."
   exit 0
 fi
 
-echo "ERROR: Unexpected return code from validateversion.sh: $RESULT"
+echo "$0 ERROR: Unexpected return code from validateversion.sh: $RESULT"
 exit 1

@@ -1,6 +1,6 @@
 #!/bin/bash
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Copyright 2023 Xyna GmbH, Germany
+# Copyright 2024 Xyna GmbH, Germany
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,12 @@
 # limitations under the License.
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-
+# if these environment variables are set, modify queue.xml entries acordingly:
+#  QUEUE_XMLFILEPATH - queue.xml file location relative to the storage folder
+#  QUEUE_MOUNTDIRECTORY - directory containing files with the following naming scheme:
+#    <uniqueName>.<key> where key can be externalName, connectData or queueType
+#
+#
 # example entry within queue.xml:
 #
 #  <queue>
@@ -25,9 +30,12 @@
 #    <queueType>bUEsDBBQACAgIAEFGClUAAAA...</queueType>
 #  </queue>
 
-
+echo "$0 INFO: $0: modify queue.xml entries"
+echo "$0 INFO: env: QUEUE_XMLFILEPATH: $QUEUE_XMLFILEPATH"
+echo "$0 INFO: env: QUEUE_MOUNTDIRECTORY: $QUEUE_MOUNTDIRECTORY"
 if [ "$QUEUE_XMLFILEPATH" == "" ] || [ "$QUEUE_MOUNTDIRECTORY" == "" ]; then
-  echo "$0 environment variables QUEUE_XMLFILEPATH and QUEUE_MOUNTDIRECTORY have to be defined."
+  echo "$0 INFO: environment variables QUEUE_XMLFILEPATH and QUEUE_MOUNTDIRECTORY have to be defined."
+  echo "$0 INFO: done"
   exit 0
 fi
 
@@ -36,7 +44,7 @@ MOUNTDIRECTORY="$QUEUE_MOUNTDIRECTORY/*"
 
 # abort, if file does not exist
 if [ ! -f "$XMLFILEPATH" ]; then
-    echo "warning: $XMLFILEPATH not found!"
+    echo "$0 WARN: $XMLFILEPATH not found!"
     exit 0
 fi
 
@@ -66,6 +74,12 @@ for PREFIX in "${PREFIXES[@]}"; do
     COUNT=4
     KEY="uniqueName"
     FROM=$(grep -n "<$KEY>$PREFIX</$KEY>" "$XMLFILEPATH" | cut -d: -f1)
+
+    if [[ $FROM == ""  ]]; then
+      echo "$0 WARN: Could not find queue '$PREFIX'"
+      continue
+    fi
+
     TO=$((FROM + COUNT - 1))
     BLOCK=$(head -n $TO "$XMLFILEPATH" | tail -$COUNT)
 
@@ -98,6 +112,7 @@ for PREFIX in "${PREFIXES[@]}"; do
                     NEWLINE=$(echo "$LINE" | sed "s#<$TAGKEY>.*</$TAGKEY>#<$TAGKEY>$TAGVALUE</$TAGKEY>#")
                     sed -i "$IDX s#.*#$NEWLINE#" "$XMLFILEPATH"
                     REPLACED=true
+                    echo "$0 INFO: set $TAGKEY for queue $PREFIX"
                 fi
                 if [[ $LINE =~ ^.*\<connectData\> ]]; then
                     CONNECTDATALINE=$LINE
@@ -111,7 +126,7 @@ for PREFIX in "${PREFIXES[@]}"; do
             done <<< "$BLOCK"
 
             if [ $REPLACED = false ]; then
-                echo "warning: could not find <$TAGKEY> tag within $PREFIX"
+                echo "$0 WARN: could not find tag <$TAGKEY> within $PREFIX"
             fi
         fi
     done
@@ -129,11 +144,12 @@ for PREFIX in "${PREFIXES[@]}"; do
         if [ $? != 0 ] ; then
           echo "$0 ERROR: Could not process connectdata."
           echo "$0        QueueType: $QUEUETYPE"
-          echo "$0        ConnectData: CONNECTDATA"
+          echo "$0        ConnectData: $CONNECTDATA"
           continue
         fi
         NEWLINE=$(echo "$CONNECTDATALINE" | sed "s#<connectData>.*</connectData>#<connectData>$PROCESSEDCONNECTDATA</connectData>#")
         sed -i "$CONNECTDATAIDX s#.*#$NEWLINE#" "$XMLFILEPATH"
+        echo "$0 INFO: set connectdata for queue $PREFIX"
     fi
 
     # replace queueType with processed queueType, if set
@@ -148,5 +164,9 @@ for PREFIX in "${PREFIXES[@]}"; do
         PROCESSEDQUEUETYPE=$(java -classpath $SERVERLIBS com.gip.xyna.xmcp.xfcli.scriptentry.CreateBlobbedQueueData $QUEUETYPE)
         NEWLINE=$(echo "$QUEUETYPELINE" | sed "s#<queueData>.*</queueData>#<queueData>$PROCESSEDQUEUETYPE</queueData>#")
         sed -i "$QUEUETYPEIDX s#.*#$NEWLINE#" "$XMLFILEPATH"
+        echo "$0 INFO: set queuetype for queue $PREFIX"
     fi
 done
+
+echo "$0 INFO: done"
+exit 0

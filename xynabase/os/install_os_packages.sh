@@ -55,6 +55,13 @@ if [[ ${OS_IMAGE} == oraclelinux:* ]]; then
     fi
     yum install -y zulu${JAVA_VERSION}-jdk-headless
     yum clean all
+elif [[ ${OS_IMAGE} == rhel:* ]]; then
+    yum install -y https://cdn.azul.com/zulu/bin/zulu-repo-1.0.0-1.noarch.rpm
+    yum -y update
+    yum -y upgrade
+    yum install -y zip unzip patch wget openssl nc which net-tools passwd rsyslog bind-utils vim less procps bc diffutils hostname perl
+    yum install -y zulu${JAVA_VERSION}-jdk-headless
+    yum clean all
 elif [[ ${OS_IMAGE} == ubuntu:* ]]; then
     apt -y update
     apt -y upgrade

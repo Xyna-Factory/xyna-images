@@ -18,20 +18,13 @@ services:
     
    xyna:
     image: xyna-factory:0.9.1
-    environment:
-     - DONT_USE_H2DB=true
-     - DB_JDBC_URL=//mariadb:3306/xyna
-     - DB_USER=xyna
-     - DB_PASSWORD=xyna_db_pwd
-     - USERARCHIVE_XMLFILEPATH=defaultHISTORY/userarchive.xml 
-     - USERARCHIVE_MOUNTDIRECTORY=/userarchive
     configs:
      - source: userarchive.XYNA.password
        target: /userarchive/XYNA.password
      - source: userarchive.XYNA.name
-       target: /userarchive/XYNAADMIN.name
+       target: /userarchive/XYNA.name
      - source: userarchive.XYNA.role
-       target: /userarchive/XYNAADMIN.role
+       target: /userarchive/XYNA.role
     expose:
       - 4245
     healthcheck:
@@ -46,9 +39,7 @@ services:
 
    modeller:
     image: xyna-modeller:0.9
-      #restart: unless-stopped
-    entrypoint: ["tail", "-f", "/dev/null"] #apachectl start
-      # command: ["apachectl", "start"]
+    entrypoint: ["tail", "-f", "/dev/null"] 
     environment:
       - MODELLER_PORT=8000
       - MODELLER_HOSTNAME="xyna"
@@ -60,14 +51,10 @@ services:
     depends_on:
       - xyna
 configs:
- 
  userarchive.XYNA.name:
-   content: |
-    XYNA
+   content: XYNA
  userarchive.XYNA.password:
-   content: |
-    XYNAPASSWORD
+   content: XYNAPASSWORD
  userarchive.XYNA.role:
-   content: |
-    ADMIN
+   content: ADMIN
 

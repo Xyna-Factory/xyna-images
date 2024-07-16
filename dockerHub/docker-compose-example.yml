@@ -17,7 +17,7 @@ services:
       start_period: 5s
     
    xyna:
-    image: xyna-factory:0.9.1
+    image: xynafactory/factory:0.9.1
     configs:
      - source: userarchive.XYNA.password
        target: /userarchive/XYNA.password
@@ -38,7 +38,7 @@ services:
         condition: service_healthy
 
    modeller:
-    image: xyna-modeller:0.9
+    image: xynafactory/modeller:0.9
     entrypoint: ["tail", "-f", "/dev/null"] 
     environment:
       - MODELLER_PORT=8000

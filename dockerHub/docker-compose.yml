@@ -17,7 +17,7 @@ services:
       start_period: 5s
     
    xyna:
-    image: xyna-factory:0.9.1
+    image: xynafactory/factory:0.9.1
     configs:
      - source: userarchive.$USERNAME.password
        target: /userarchive/$USERNAME.password
@@ -38,7 +38,7 @@ services:
         condition: service_healthy
 
    modeller:
-    image: xyna-modeller:0.9
+    image: xynafactory/modeller:0.9
       #restart: unless-stopped
     entrypoint: ["tail", "-f", "/dev/null"] #apachectl start
       # command: ["apachectl", "start"]

@@ -39,7 +39,7 @@ services:
 
    modeller:
     image: xynafactory/modeller:0.9
-    entrypoint: ["tail", "-f", "/dev/null"] 
+    entrypoint: ["apachectl", "-D", "FOREGROUND"] 
     environment:
       - MODELLER_PORT=8000
       - MODELLER_HOSTNAME="xyna"

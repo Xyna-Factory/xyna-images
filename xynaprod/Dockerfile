@@ -75,5 +75,5 @@ RUN ./xynafactory.sh start \
     && echo "HISTORYimage=HISTORYwriteable" >> /etc/opt/xyna/environment/black_edition_001_copy_to_writeable_pl.properties
 
 USER 4242:4242
-ENV HOSTNAME xynaContainer
-CMD /k8s/xyna/factory.sh
+ENV HOSTNAME=xynaContainer
+CMD ["/k8s/xyna/factory.sh"]

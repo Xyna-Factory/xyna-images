@@ -38,5 +38,5 @@ RUN cp -r ${XYNA_PATH} ${XYNA_PATH}/../xyna_image
 
 
 USER 4242:4242
-ENV HOSTNAME xynaContainer
-CMD /k8s/xyna/factory.sh
+ENV HOSTNAME=xynaContainer
+CMD ["/k8s/xyna/factory.sh"]

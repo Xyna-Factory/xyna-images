@@ -16,7 +16,7 @@
 
 # syntax=docker/dockerfile:1
 ARG OS_IMAGE
-FROM ${OS_IMAGE} as xyna-install
+FROM ${OS_IMAGE} AS xyna-install
 ARG OS_IMAGE
 ARG JAVA_VERSION
 
@@ -39,8 +39,8 @@ RUN useradd -m -u 4242 -g 4242 -s /bin/bash $XYNA_USER
 
 COPY --chown=${XYNA_USER}:${XYNA_USER} XynaFactory_v*.zip /tmp/
 
-ENV HOSTNAME xynaContainer
-ENV PREREQ_INSTALL_PARAMS ${PREREQ_INSTALL_PARAMS:-"\n\n\n\n\n\n\n\n\nfalse\n\nchangeMe\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nxyna\n\n\n\n\n\n\n\n\nxyna\n\n\n\n\n\n"}
+ENV HOSTNAME=xynaContainer
+ENV PREREQ_INSTALL_PARAMS=${PREREQ_INSTALL_PARAMS:-"\n\n\n\n\n\n\n\n\nfalse\n\nchangeMe\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nxyna\n\n\n\n\n\n\n\n\nxyna\n\n\n\n\n\n"}
 
 RUN mkdir /var/log/xyna
 RUN chown -R ${XYNA_USER}:${XYNA_USER} /var/log/xyna
@@ -78,7 +78,7 @@ RUN cd /tmp \
 
 # install Blackedition
 USER ${XYNA_USER}:4242
-ENV HOSTNAME xynaContainer
+ENV HOSTNAME=xynaContainer
 RUN /tmp/XynaBlackEdition/install_black_edition.sh -v -b -c xynafactory -x GlobalApplicationMgmt \
     && ${XYNA_PATH}/server/xynafactory.sh stop \
     && rm -rf ${XYNA_PATH}/backup \
@@ -109,5 +109,5 @@ RUN chmod 777 /tmp/configlog.sh \
 && sed -ri 's#  <Root level="[a-z]*">#  <Root level="warn">#' ${XYNA_PATH}/server/log4j2.xml
 
 USER 4242:4242
-ENV HOSTNAME xynaContainer
-CMD /k8s/xyna/factory.sh
+ENV HOSTNAME=xynaContainer
+CMD ["/k8s/xyna/factory.sh"]

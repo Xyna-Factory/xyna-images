@@ -15,7 +15,8 @@
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # syntax=docker/dockerfile:1
-FROM xynafactory/xynadev:xyna10.0.0.2-image1.0.5-java21-oraclelinux9
+ARG XYNADEV_IMAGE
+FROM ${XYNADEV_IMAGE}
 
 #Prepare Database Connector and Conector Pool
 RUN  cd /tmp/XynaFactoryBundle/ \
@@ -23,6 +24,7 @@ RUN  cd /tmp/XynaFactoryBundle/ \
 
 COPY --chown=${XYNA_USER}:${XYNA_USER} init.sh /tmp/
 
-RUN chmod +x /tmp/init.sh
+RUN chmod +x /tmp/init.sh \
+  && rm -rf /opt/xyna/xyna_001/xyna_image   
 
 CMD /tmp/init.sh

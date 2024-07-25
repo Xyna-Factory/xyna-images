@@ -17,7 +17,17 @@ services:
       start_period: 5s
     
    xyna:
-    image: xynafactory/factory:0.9.1
+     # platform: linux/amd64 #Has to be set for Mac users
+    image: xynafactory/factory:1.0.0
+    volumes:
+      - xyna-userarchive:/userarchive:rw
+      - xyna-pooldefinition:/pooldefinition
+      - xyna-tmp:/tmp
+      - xyna-revisions:/opt/xyna/xyna_001/revisions
+      - xyna-xmomreposisotiy:/opt/xyna/xyna_001/xmomrepository
+      - xyna-xnwhclasses:/opt/xyna/xyna_001/server/xnwhclasses
+      - xyna-gen:/opt/xyna/xyna_001/server/gen
+      - xyna-storage:/opt/xyna/xyna_001/server/storage
     configs:
      - source: userarchive.$USERNAME.password
        target: /userarchive/$USERNAME.password
@@ -36,10 +46,12 @@ services:
     depends_on:
       mariadb:
         condition: service_healthy
+    ports:
+      - "8000-8010"
 
    modeller:
     image: xynafactory/modeller:0.9
-    entrypoint: ["apachectl", "-D", "FOREGROUND"] 
+    entrypoint: ["apachectl", "-D", "FOREGROUND"]
     environment:
       - MODELLER_PORT=8000
       - MODELLER_HOSTNAME="xyna"
@@ -50,11 +62,25 @@ services:
       - 8000:8000
     depends_on:
       - xyna
+
 configs:
- userarchive.$USERNAME.name:
-   content: $USERNAME
- userarchive.$USERNAME.password:
-   content: $USERPASSWORD
- userarchive.$USERNAME.role:
-   content: $USERROLE
+  userarchive.$USERNAME.name:
+    content: |
+      $USERNAME
+  userarchive.$USERNAME.password:
+    content: |
+      $USERPASSWORD
+  userarchive.$USERNAME.role:
+    content: |
+      $USERROLE
+
+volumes:
+  xyna-userarchive:
+  xyna-pooldefinition:
+  xyna-tmp:
+  xyna-revisions:
+  xyna-xmomreposisotiy:
+  xyna-xnwhclasses:
+  xyna-gen:
+  xyna-storage:
 

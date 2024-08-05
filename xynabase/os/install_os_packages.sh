@@ -49,13 +49,13 @@ if [[ ${OS_IMAGE} == oraclelinux:* ]]; then
     yum install -y https://cdn.azul.com/zulu/bin/zulu-repo-1.0.0-1.noarch.rpm
     yum -y update
     yum -y upgrade
-    yum install -y zip unzip patch wget openssl nc which net-tools passwd rsyslog bind-utils vim less telnet procps bc diffutils hostname perl gcc python3-devel pip
+    yum install -y zip unzip patch wget openssl nc which net-tools passwd rsyslog bind-utils vim less telnet procps bc diffutils hostname perl gcc python3-devel
     if [[ ${OS_IMAGE} == oraclelinux:7* ]]; then
         yum install -y xinetd
     fi
     yum install -y zulu${JAVA_VERSION}-jdk-headless
     yum clean all
-    pip install jep
+    pip3 install jep
 elif [[ ${OS_IMAGE} == redhat/ubi*:* ]]; then
     yum install -y https://cdn.azul.com/zulu/bin/zulu-repo-1.0.0-1.noarch.rpm
     yum -y update
@@ -63,7 +63,7 @@ elif [[ ${OS_IMAGE} == redhat/ubi*:* ]]; then
     yum install -y zip unzip patch wget openssl nc which net-tools passwd rsyslog bind-utils vim less procps bc diffutils hostname perl
     yum install -y zulu${JAVA_VERSION}-jdk-headless
     yum clean all
-    dnf install gcc python3-devel
+    dnf install -y gcc python3-devel
     # pip3 already installed
     pip3 install jep
 elif [[ ${OS_IMAGE} == ubuntu:* ]]; then

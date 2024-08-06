@@ -30,6 +30,8 @@ ENV PREREQ_INSTALL_PARAMSANCE_NO=1
 ENV JAVA_HOME=/usr/lib/jvm/zulu${JAVA_VERSION}
 ENV PATH="$JAVA_HOME/bin:$PATH"
 
+SHELL ["/bin/bash", "-c"]
+
 COPY os /tmp/os
 RUN ls -l /tmp/os
 RUN /tmp/os/install_os_packages.sh -o ${OS_IMAGE} -j ${JAVA_VERSION}
@@ -73,7 +75,8 @@ RUN cd /tmp \
     && chown -R ${XYNA_USER}:${XYNA_USER} XBE_Prerequisites \
     && chmod 777 XBE_Prerequisites/install_prerequisites.sh \
     && source /etc/opt/xyna/environment/venv/bin/activate \
-    && printf $PREREQ_INSTALL_PARAMS | XBE_Prerequisites/install_prerequisites.sh -x
+    && printf $PREREQ_INSTALL_PARAMS | XBE_Prerequisites/install_prerequisites.sh -x \
+    && deactivate
 
 RUN /tmp/os/adjust_blackedition_properties.sh -j ${JAVA_VERSION}
 

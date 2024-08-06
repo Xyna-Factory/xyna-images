@@ -30,6 +30,8 @@ ENV PREREQ_INSTALL_PARAMSANCE_NO=1
 ENV JAVA_HOME=/usr/lib/jvm/zulu${JAVA_VERSION}
 ENV PATH="$JAVA_HOME/bin:$PATH"
 
+SHELL ["/bin/bash", "-c"]
+
 COPY os /tmp/os
 RUN ls -l /tmp/os
 RUN /tmp/os/install_os_packages.sh -o ${OS_IMAGE} -j ${JAVA_VERSION}
@@ -40,13 +42,25 @@ RUN useradd -m -u 4242 -g 4242 -s /bin/bash $XYNA_USER
 COPY --chown=${XYNA_USER}:${XYNA_USER} XynaFactory_v*.zip /tmp/
 
 ENV HOSTNAME=xynaContainer
-ENV PREREQ_INSTALL_PARAMS=${PREREQ_INSTALL_PARAMS:-"\n\n\n\n\n\n\n\n\nfalse\n\nchangeMe\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nxyna\n\n\n\n\n\n\n\n\nxyna\n\n\n\n\n\n"}
+ENV PREREQ_INSTALL_PARAMS=${PREREQ_INSTALL_PARAMS:-"\n\n\n\n\n\n\n\n\nfalse\n\nchangeMe\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nxyna\n\n\n\n\n\n\n\n\nxyna\n\n\n\n\n\n"}
 
-RUN mkdir /var/log/xyna
-RUN chown -R ${XYNA_USER}:${XYNA_USER} /var/log/xyna
+RUN mkdir /var/log/xyna \
+    && chown -R ${XYNA_USER}:${XYNA_USER} /var/log/xyna \
+    && mkdir -p /etc/opt/xyna/environment \
+    && chown -R ${XYNA_USER}:${XYNA_USER} /etc/opt/xyna/environment
+
+
+# python code snippets
+USER ${XYNA_USER}
+RUN python3 -m venv /etc/opt/xyna/environment/venv \
+    && source /etc/opt/xyna/environment/venv/bin/activate \
+    && pip3 install jep \
+    && deactivate
+
+USER root
 
 # install prerequisites
-# create files in /etc/opt/xyna/environment: xynaContainer.properties  black_edition_001.properties and xynaContainer.component.properties
+# create files in /etc/opt/xyna/environment: xynaContainer.properties black_edition_001.properties and xynaContainer.component.properties
 RUN cd /tmp \
     #
     && unzip XynaFactory* \
@@ -60,14 +74,15 @@ RUN cd /tmp \
     && mv XBE_Prerequisites* XBE_Prerequisites \
     && chown -R ${XYNA_USER}:${XYNA_USER} XBE_Prerequisites \
     && chmod 777 XBE_Prerequisites/install_prerequisites.sh \
-    && printf $PREREQ_INSTALL_PARAMS | XBE_Prerequisites/install_prerequisites.sh -x
+    && source /etc/opt/xyna/environment/venv/bin/activate \
+    && printf $PREREQ_INSTALL_PARAMS | XBE_Prerequisites/install_prerequisites.sh -x \
+    && deactivate
 
 RUN /tmp/os/adjust_blackedition_properties.sh -j ${JAVA_VERSION}
 
 RUN cd /tmp \
     && unzip XynaBlackEdition.zip \
     && rm XynaBlackEdition.zip \
-        && ls \
     && mv XynaFactory_* XynaBlackEdition \
     && chown ${XYNA_USER}:${XYNA_USER} XynaBlackEdition \
     && chown -R ${XYNA_USER}:${XYNA_USER} /etc/opt/xyna/environment/ \
@@ -82,7 +97,7 @@ ENV HOSTNAME=xynaContainer
 RUN /tmp/XynaBlackEdition/install_black_edition.sh -v -b -c xynafactory -x GlobalApplicationMgmt \
     && ${XYNA_PATH}/server/xynafactory.sh stop \
     && rm -rf ${XYNA_PATH}/backup \
-    && rm -rf ${XYNA_PATH}/server/webservices/XynaTop*
+    && /tmp/os/set_venv_permission.sh
 
 
 USER root

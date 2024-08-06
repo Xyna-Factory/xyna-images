@@ -49,7 +49,7 @@ if [[ ${OS_IMAGE} == oraclelinux:* ]]; then
     yum install -y https://cdn.azul.com/zulu/bin/zulu-repo-1.0.0-1.noarch.rpm
     yum -y update
     yum -y upgrade
-    yum install -y zip unzip patch wget openssl nc which net-tools passwd rsyslog bind-utils vim less telnet procps bc diffutils hostname perl
+    yum install -y zip unzip patch wget openssl nc which net-tools passwd rsyslog bind-utils vim less telnet procps bc diffutils hostname perl gcc python3-devel
     if [[ ${OS_IMAGE} == oraclelinux:7* ]]; then
         yum install -y xinetd
     fi
@@ -62,10 +62,11 @@ elif [[ ${OS_IMAGE} == redhat/ubi*:* ]]; then
     yum install -y zip unzip patch wget openssl nc which net-tools passwd rsyslog bind-utils vim less procps bc diffutils hostname perl
     yum install -y zulu${JAVA_VERSION}-jdk-headless
     yum clean all
+    dnf install -y gcc python3-devel
 elif [[ ${OS_IMAGE} == ubuntu:* ]]; then
     apt -y update
     apt -y upgrade
-    apt-get -y install zip unzip patch wget netcat-traditional xinetd net-tools bind9utils vim less dc libxml2-utils gnupg ca-certificates curl
+    apt-get -y install zip unzip patch wget netcat-traditional xinetd net-tools bind9utils vim less dc libxml2-utils gnupg ca-certificates curl gcc python3-dev python3-venv
     curl -s https://repos.azul.com/azul-repo.key | gpg --dearmor -o /usr/share/keyrings/azul.gpg
     echo "deb [signed-by=/usr/share/keyrings/azul.gpg] https://repos.azul.com/zulu/deb stable main" | tee /etc/apt/sources.list.d/zulu.list
     apt -y update

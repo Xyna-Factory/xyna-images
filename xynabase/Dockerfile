@@ -45,8 +45,18 @@ ENV PREREQ_INSTALL_PARAMS=${PREREQ_INSTALL_PARAMS:-"\n\n\n\n\n\n\n\n\nfalse\n\nc
 RUN mkdir /var/log/xyna
 RUN chown -R ${XYNA_USER}:${XYNA_USER} /var/log/xyna
 
+
+# python code snippets
+USER ${XYNA_USER}
+RUN python3 -m venv /etc/opt/xyna/environment/venv \
+    && source /etc/opt/xyna/environment/venv/bin/activate \
+    && pip3 install jep \
+    && deactivate
+
+USER root
+
 # install prerequisites
-# create files in /etc/opt/xyna/environment: xynaContainer.properties  black_edition_001.properties and xynaContainer.component.properties
+# create files in /etc/opt/xyna/environment: xynaContainer.properties black_edition_001.properties and xynaContainer.component.properties
 RUN cd /tmp \
     #
     && unzip XynaFactory* \
@@ -62,12 +72,12 @@ RUN cd /tmp \
     && chmod 777 XBE_Prerequisites/install_prerequisites.sh \
     && printf $PREREQ_INSTALL_PARAMS | XBE_Prerequisites/install_prerequisites.sh -x
 
-RUN /tmp/os/adjust_blackedition_properties.sh -j ${JAVA_VERSION}
+RUN /tmp/os/adjust_blackedition_properties.sh -j ${JAVA_VERSION} \
+    && /tmp/os/set_venv_permission.sh
 
 RUN cd /tmp \
     && unzip XynaBlackEdition.zip \
     && rm XynaBlackEdition.zip \
-        && ls \
     && mv XynaFactory_* XynaBlackEdition \
     && chown ${XYNA_USER}:${XYNA_USER} XynaBlackEdition \
     && chown -R ${XYNA_USER}:${XYNA_USER} /etc/opt/xyna/environment/ \

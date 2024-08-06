@@ -55,7 +55,6 @@ if [[ ${OS_IMAGE} == oraclelinux:* ]]; then
     fi
     yum install -y zulu${JAVA_VERSION}-jdk-headless
     yum clean all
-    pip3 install jep
 elif [[ ${OS_IMAGE} == redhat/ubi*:* ]]; then
     yum install -y https://cdn.azul.com/zulu/bin/zulu-repo-1.0.0-1.noarch.rpm
     yum -y update
@@ -64,17 +63,14 @@ elif [[ ${OS_IMAGE} == redhat/ubi*:* ]]; then
     yum install -y zulu${JAVA_VERSION}-jdk-headless
     yum clean all
     dnf install -y gcc python3-devel
-    # pip3 already installed
-    pip3 install jep
 elif [[ ${OS_IMAGE} == ubuntu:* ]]; then
     apt -y update
     apt -y upgrade
-    apt-get -y install zip unzip patch wget netcat-traditional xinetd net-tools bind9utils vim less dc libxml2-utils gnupg ca-certificates curl gcc python3-dev pip
+    apt-get -y install zip unzip patch wget netcat-traditional xinetd net-tools bind9utils vim less dc libxml2-utils gnupg ca-certificates curl gcc python3-dev
     curl -s https://repos.azul.com/azul-repo.key | gpg --dearmor -o /usr/share/keyrings/azul.gpg
     echo "deb [signed-by=/usr/share/keyrings/azul.gpg] https://repos.azul.com/zulu/deb stable main" | tee /etc/apt/sources.list.d/zulu.list
     apt -y update
     apt -y install zulu${JAVA_VERSION}-jdk-headless
-    pip install jep
 else
    echo "Warning: unsupported OS_IMAGE=${OS_IMAGE}"
 fi

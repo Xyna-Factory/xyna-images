@@ -75,8 +75,7 @@ RUN cd /tmp \
     && source /etc/opt/xyna/environment/venv/bin/activate \
     && printf $PREREQ_INSTALL_PARAMS | XBE_Prerequisites/install_prerequisites.sh -x
 
-RUN /tmp/os/adjust_blackedition_properties.sh -j ${JAVA_VERSION} \
-    && /tmp/os/set_venv_permission.sh
+RUN /tmp/os/adjust_blackedition_properties.sh -j ${JAVA_VERSION}
 
 RUN cd /tmp \
     && unzip XynaBlackEdition.zip \
@@ -95,7 +94,7 @@ ENV HOSTNAME=xynaContainer
 RUN /tmp/XynaBlackEdition/install_black_edition.sh -v -b -c xynafactory -x GlobalApplicationMgmt \
     && ${XYNA_PATH}/server/xynafactory.sh stop \
     && rm -rf ${XYNA_PATH}/backup \
-    && rm -rf ${XYNA_PATH}/server/webservices/XynaTop*
+    && /tmp/os/set_venv_permission.sh
 
 
 USER root

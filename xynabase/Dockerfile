@@ -72,7 +72,7 @@ RUN cd /tmp \
     && mv XBE_Prerequisites* XBE_Prerequisites \
     && chown -R ${XYNA_USER}:${XYNA_USER} XBE_Prerequisites \
     && chmod 777 XBE_Prerequisites/install_prerequisites.sh \
-    && source /etc/opt/xyna/environment/venv/bin/activate
+    && source /etc/opt/xyna/environment/venv/bin/activate \
     && printf $PREREQ_INSTALL_PARAMS | XBE_Prerequisites/install_prerequisites.sh -x
 
 RUN /tmp/os/adjust_blackedition_properties.sh -j ${JAVA_VERSION} \

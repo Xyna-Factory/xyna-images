@@ -15,7 +15,7 @@
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 #should have the form "xynabase:<tag>".
-ARG XYNABASE_IMAGE
+ARG XYNABASE_IMAGE=xynabase:xynamain-imagemain-java11-ubuntu24.04
 FROM ${XYNABASE_IMAGE}
 
 # configure pid file location

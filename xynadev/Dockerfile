@@ -15,7 +15,7 @@
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # syntax=docker/dockerfile:1
-ARG XYNABASE_IMAGE
+ARG XYNABASE_IMAGE=xynabase:xynamain-imagemain-java11-ubuntu24.04
 FROM ${XYNABASE_IMAGE}
 
 COPY --chown=${XYNA_USER}:${XYNA_USER} GitIntegration*.app /tmp/

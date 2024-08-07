@@ -15,7 +15,7 @@
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # syntax=docker/dockerfile:1
-ARG OS_IMAGE
+ARG OS_IMAGE=ubuntu:24.04
 FROM ${OS_IMAGE} AS xyna-install
 ARG OS_IMAGE
 ARG JAVA_VERSION

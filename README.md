@@ -16,4 +16,4 @@ For building a Xyna dockerimage you have to:
 
 ### xynabuildplatfom
 For building the xynabuildplatfom you have to:
-* Run build.sh
+* Run build.sh in xynabuildplatfom folder

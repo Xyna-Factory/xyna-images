@@ -18,7 +18,10 @@ services:
     
    xyna:
      # platform: linux/amd64 #Has to be set for Mac users
-    image: xynafactory/factory:1.0.0
+    image: xynafactory/factory:1.0.2
+    environment:
+      - USERARCHIVE_XMLFILEPATH=defaultHISTORY/userarchive.xml
+      - USERARCHIVE_MOUNTDIRECTORY=/userarchive
     volumes:
       - xyna-userarchive:/userarchive:rw
       - xyna-pooldefinition:/pooldefinition

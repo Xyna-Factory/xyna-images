@@ -29,6 +29,8 @@ RUN ${XYNA_PATH}/server/xynafactory.sh start \
   && printf '0\n' | /tmp/XynaBlackEdition/install_black_edition.sh -x GuiHttp \
   && /k8s/xyna/startapplication.sh GuiHttp \
   && ${XYNA_PATH}/server/xynafactory.sh importapplication /tmp/GitIntegration* \
+  && ${XYNA_PATH}/server/xynafactory.sh set xmcp.guihttp.sts false \
+  && ${XYNA_PATH}/server/xynafactory.sh set xmcp.guihttp.csrf false \
   && ${XYNA_PATH}/server/xynafactory.sh stop
 
 

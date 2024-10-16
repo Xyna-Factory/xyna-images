@@ -51,6 +51,12 @@ function f_determine_tag_position() {
   re='^[0-9]+$'
   if ! [[ $FROM =~ $re ]] ; then
     FROM=$(grep -n "</userarchiveTable>" "$XMLFILEPATH" | cut -d: -f1) # current position of closing userarchiveTable tag
+    if ! [[ $FOM =~ $re ]]; then
+      FROM=$(grep -n "<userarchiveTable" "$XMLFILEPATH" | cut -d: -f1)
+      sed -i "$FROM s#\"/>#\">#" "$XMLFILEPATH"
+      FROM=$((FROM+1))
+      echo "</userarchiveTable>" >> "$XMLFILEPATH"
+    fi
     sed -i "$FROM i </userarchive>" "$XMLFILEPATH"
     sed -i "$FROM i <passwordChangeReason>NEW_USER</passwordChangeReason>" "$XMLFILEPATH"
     sed -i "$FROM i <passwordChangeDate>0</passwordChangeDate>" "$XMLFILEPATH"
@@ -66,7 +72,7 @@ function f_determine_tag_position() {
 }
 
 
-echo "$0 INFO: $0: modify userarchive.xml entries"
+echo "$0 INFO: $0: modify and add userarchive.xml entries"
 echo "$0 INFO: env: USERARCHIVE_XMLFILEPATH: $USERARCHIVE_XMLFILEPATH"
 echo "$0 INFO: env: USERARCHIVE_MOUNTDIRECTORY: $USERARCHIVE_MOUNTDIRECTORY"
 if [ "$USERARCHIVE_XMLFILEPATH" == "" ] || [ "$USERARCHIVE_MOUNTDIRECTORY" == "" ]; then

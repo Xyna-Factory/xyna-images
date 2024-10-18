@@ -15,12 +15,12 @@
 # limitations under the License.
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-# if these environment variables are set, modify userarchive.xml entries acordingly:
+# if these environment variables are set, modify or create userarchive.xml entries acordingly:
 #  USERARCHIVE_XMLFILEPATH - userarchive.xml file location relative to the storage folder
 #  USERARCHIVE_MOUNTDIRECTORY - directory containing files with the following naming scheme:
 #    <username>.<key> where key can be role, password, creationData, locked, domains, failedLogins, passwordChangeDate and passwordChangeReason
 #    the file content will be used to set the value in userarchive.xml. The password will be encrypted.
-#    if passwords are set, the following additional requirements have to be fulfilled:
+#    if passwords are set, the following additional sytem properties and files may be used to configure password generation behavior:
 #      * environment variable XYNAPROPERTIES_MOUNTDIRECTORY has to be specified
 #      * the following files need to exist in $XYNAPROPERTIES_MOUNTDIRECTORY and contain valid values:
 #      * * xyna.xfmg.xopctrl.usermanagement.login.hashalgorithm.propertyvalue
@@ -45,7 +45,34 @@
 #     <passwordChangeReason>NEW_USER</passwordChangeReason>
 # </userarchive>
 
-echo "$0 INFO: $0: modify userarchive.xml entries"
+
+function f_determine_tag_position() {
+  FROM=$(grep -n "<$KEY>$PREFIX</$KEY>" "$XMLFILEPATH" | cut -d: -f1)
+  re='^[0-9]+$'
+  if ! [[ $FROM =~ $re ]] ; then
+    FROM=$(grep -n "</userarchiveTable>" "$XMLFILEPATH" | cut -d: -f1) # current position of closing userarchiveTable tag
+    if ! [[ $FOM =~ $re ]]; then
+      FROM=$(grep -n "<userarchiveTable" "$XMLFILEPATH" | cut -d: -f1)
+      sed -i "$FROM s#\"/>#\">#" "$XMLFILEPATH"
+      FROM=$((FROM+1))
+      echo "</userarchiveTable>" >> "$XMLFILEPATH"
+    fi
+    sed -i "$FROM i </userarchive>" "$XMLFILEPATH"
+    sed -i "$FROM i <passwordChangeReason>NEW_USER</passwordChangeReason>" "$XMLFILEPATH"
+    sed -i "$FROM i <passwordChangeDate>0</passwordChangeDate>" "$XMLFILEPATH"
+    sed -i "$FROM i <failedLogins>0</failedLogins>" "$XMLFILEPATH"
+    sed -i "$FROM i <domains>XYNA</domains>" "$XMLFILEPATH"
+    sed -i "$FROM i <locked>false</locked>" "$XMLFILEPATH"
+    sed -i "$FROM i <creationDate>0</creationDate>" "$XMLFILEPATH"
+    sed -i "$FROM i <password></password>" "$XMLFILEPATH"
+    sed -i "$FROM i <role>MODELLER</role>" "$XMLFILEPATH"
+    sed -i "$FROM i <name>$PREFIX</name>" "$XMLFILEPATH"
+    sed -i "$FROM i <userarchive>" "$XMLFILEPATH"
+  fi
+}
+
+
+echo "$0 INFO: $0: modify and add userarchive.xml entries"
 echo "$0 INFO: env: USERARCHIVE_XMLFILEPATH: $USERARCHIVE_XMLFILEPATH"
 echo "$0 INFO: env: USERARCHIVE_MOUNTDIRECTORY: $USERARCHIVE_MOUNTDIRECTORY"
 if [ "$USERARCHIVE_XMLFILEPATH" == "" ] || [ "$USERARCHIVE_MOUNTDIRECTORY" == "" ]; then
@@ -88,13 +115,7 @@ for PREFIX in "${PREFIXES[@]}"; do
     # extract sub-tags belonging to xml entry
     COUNT=11
     KEY="name"
-    FROM=$(grep -n "<$KEY>$PREFIX</$KEY>" "$XMLFILEPATH" | cut -d: -f1)
-
-    if [[ $FROM == ""  ]]; then
-      echo "$0 WARN: Could not find user '$PREFIX'"
-      continue
-    fi
-
+    f_determine_tag_position
     TO=$((FROM + COUNT - 1))
     BLOCK=$(head -n $TO "$XMLFILEPATH" | tail -$COUNT)
 

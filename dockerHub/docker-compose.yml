@@ -22,11 +22,10 @@ services:
     # SYNC_CONTAINER_LIFECYCLE_TO_FACTORY: set to false to keep the container running independently of the xynafactory process
     # The values of the MYSQL_... variables must match the values in the mariadb service
     environment:
-      - SYNC_CONTAINER_LIFECYCLE_TO_FACTORY=false
-      - MYSQL_DATABASE=xyna
+      - SYNC_CONTAINER_LIFECYCLE_TO_FACTORY=true
       - MYSQL_USER=xyna
-      - MYSQL_PASSWORD=xyna_db_pwd 
-      - MYSQL_IPADDRESS=mariadb:3306 
+      - MYSQL_PASSWORD=xyna_db_pwd
+      - CONNECT_STRING="jdbc:mariadb://mariadb:3306/xyna"
       - USERARCHIVE_XMLFILEPATH=defaultHISTORY/userarchive.xml
       - USERARCHIVE_MOUNTDIRECTORY=/userarchive
     volumes:

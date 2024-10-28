@@ -25,14 +25,14 @@ RUN  cd /tmp/XynaFactoryBundle/ \
 # set up persistence layer
 ARG MYSQL_DATABASE="placeholder"
 ARG MYSQL_USER="placeholder"
-ARG MYSQL_PASSWORD="placeholder" 
+ARG MYSQL_PASSWORD="placeholder"
 ARG MYSQL_IPADDRESS="placeholder"
-ARG CONNECT_STRING="placeholder" 
+ARG CONNECT_STRING="placeholder"
 ARG SIZE=10
 ARG XYNAFACTORY_SH=/opt/xyna/xyna_001/server/xynafactory.sh
 RUN <<-EOF
 ${XYNAFACTORY_SH} start
-${XYNAFACTORY_SH} addconnectionpool -connectstring ${CONNECT_STRING} -name Xyna-Infra-Pool -size ${SIZE} -type Mock_MySQL -user ${MYSQL_USER} -password ${MYSQL_PASSWORD} ; then
+${XYNAFACTORY_SH} addconnectionpool -connectstring ${CONNECT_STRING} -name Xyna-Infra-Pool -size ${SIZE} -type Mock_MySQL -user ${MYSQL_USER} -password ${MYSQL_PASSWORD}
 ${XYNAFACTORY_SH} instantiatepersistencelayer -persistenceLayerName mysql -department xyna -connectionType DEFAULT -persistenceLayerInstanceName Xyna-Infra-Default-Inst -persistenceLayerSpecifics Xyna-Infra-Pool 4000 
 ${XYNAFACTORY_SH} instantiatepersistencelayer -persistenceLayerName mysql -department xyna -connectionType HISTORY -persistenceLayerInstanceName Xyna-Infra-History-Inst -persistenceLayerSpecifics Xyna-Infra-Pool 4000 
 ${XYNAFACTORY_SH} registertable -c -persistenceLayerInstanceName Xyna-Infra-History-Inst -tableName orderinfo 

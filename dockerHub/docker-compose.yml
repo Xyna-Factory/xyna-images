@@ -19,7 +19,14 @@ services:
    xyna:
      # platform: linux/amd64 #Has to be set for Mac users
     image: xynafactory/factory:1.0.2
+    # SYNC_CONTAINER_LIFECYCLE_TO_FACTORY: set to false to keep the container running independently of the xynafactory process
+    # The values of the MYSQL_... variables must match the values in the mariadb service
     environment:
+      - SYNC_CONTAINER_LIFECYCLE_TO_FACTORY=false
+      - MYSQL_DATABASE=xyna
+      - MYSQL_USER=xyna
+      - MYSQL_PASSWORD=xyna_db_pwd 
+      - MYSQL_IPADDRESS=mariadb:3306 
       - USERARCHIVE_XMLFILEPATH=defaultHISTORY/userarchive.xml
       - USERARCHIVE_MOUNTDIRECTORY=/userarchive
     volumes:
@@ -53,7 +60,7 @@ services:
       - "8000-8010"
 
    modeller:
-    image: xynafactory/modeller:0.9
+    image: xynafactory/modeller:0.10
     entrypoint: ["apachectl", "-D", "FOREGROUND"]
     environment:
       - MODELLER_PORT=8000

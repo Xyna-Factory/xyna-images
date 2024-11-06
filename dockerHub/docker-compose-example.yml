@@ -18,16 +18,14 @@ services:
     
    xyna:
      # platform: linux/amd64 #Has to be set for Mac users
-    image: xynafactory/factory:1.0.2
+    image: xynafactory/latest
     # SYNC_CONTAINER_LIFECYCLE_TO_FACTORY: set to false to keep the container running independently of the xynafactory process
-    # The values of the MYSQL_... variables must match the values in the mariadb service
     environment:
       - SYNC_CONTAINER_LIFECYCLE_TO_FACTORY=true
-      - MYSQL_USER=xyna
-      - MYSQL_PASSWORD=xyna_db_pwd
-      - CONNECT_STRING="jdbc:mariadb://mariadb:3306/xyna"
       - USERARCHIVE_XMLFILEPATH=defaultHISTORY/userarchive.xml
       - USERARCHIVE_MOUNTDIRECTORY=/userarchive
+      - POOLDEFINITION_XMLFILEPATH=defaultHISTORY/pooldefinition.xml
+      - POOLDEFINITION_MOUNTDIRECTORY=/pooldefinition
     volumes:
       - xyna-userarchive:/userarchive:rw
       - xyna-pooldefinition:/pooldefinition
@@ -44,6 +42,22 @@ services:
        target: /userarchive/XYNA.name
      - source: userarchive.XYNA.role
        target: /userarchive/XYNA.role
+     - source: pooldefinition.password
+       target: /pooldefinition/Xyna-Infra-Pool.password
+     - source: pooldefinition.password
+       target: /pooldefinition/Xyna-Infra-Pool_dedicated.password
+     - source: pooldefinition.user
+       target: /pooldefinition/Xyna-Infra-Pool.user
+     - source: pooldefinition.user
+       target: /pooldefinition/Xyna-Infra-Pool_dedicated.user
+     - source: pooldefinition.connectstring
+       target: /pooldefinition/Xyna-Infra-Pool.connectstring
+     - source: pooldefinition.connectstring
+       target: /pooldefinition/Xyna-Infra-Pool_dedicated.connectstring
+     - source: pooldefinition.type
+       target: /pooldefinition/Xyna-Infra-Pool.type
+     - source: pooldefinition.type
+       target: /pooldefinition/Xyna-Infra-Pool_dedicated.type
     expose:
       - 4245
     healthcheck:
@@ -59,7 +73,7 @@ services:
       - "8000-8010"
 
    modeller:
-    image: xynafactory/modeller:0.10
+    image: xynafactory/modeller:latest
     entrypoint: ["apachectl", "-D", "FOREGROUND"]
     environment:
       - MODELLER_PORT=8000
@@ -72,6 +86,7 @@ services:
     depends_on:
       - xyna
 
+# The values of the pooldefinition variables must match the values in the mariadb service
 configs:
   userarchive.XYNA.name:
     content: |
@@ -82,6 +97,18 @@ configs:
   userarchive.XYNA.role:
     content: |
       ADMIN
+  pooldefinition.password:
+    content: |
+      xyna_db_pwd
+  pooldefinition.user:
+    content: |
+      xyna
+  pooldefinition.connectstring:
+    content: |
+      jdbc:mariadb://mariadb:3306/xyna
+  pooldefinition.type:
+    content: |
+      MySQL
 
 volumes:
   xyna-userarchive:

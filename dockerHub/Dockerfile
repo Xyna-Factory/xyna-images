@@ -1,5 +1,5 @@
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Copyright 2023 Xyna GmbH, Germany
+# Copyright 2024 Xyna GmbH, Germany
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,16 +23,10 @@ RUN  cd /tmp/XynaFactoryBundle/ \
   && ./prepare_db_connector_jars.sh 
 
 # set up persistence layer
-ARG MYSQL_DATABASE="placeholder"
-ARG MYSQL_USER="placeholder"
-ARG MYSQL_PASSWORD="placeholder"
-ARG MYSQL_IPADDRESS="placeholder"
-ARG CONNECT_STRING="placeholder"
-ARG SIZE=10
 ARG XYNAFACTORY_SH=/opt/xyna/xyna_001/server/xynafactory.sh
 RUN <<-EOF
 ${XYNAFACTORY_SH} start
-${XYNAFACTORY_SH} addconnectionpool -connectstring ${CONNECT_STRING} -name Xyna-Infra-Pool -size ${SIZE} -type Mock_MySQL -user ${MYSQL_USER} -password ${MYSQL_PASSWORD}
+${XYNAFACTORY_SH} addconnectionpool -connectstring jdbc:mariadb://placeholder/xyna -name Xyna-Infra-Pool -size 10 -type Mock_MySQL -user placeholder -password placeholder
 ${XYNAFACTORY_SH} instantiatepersistencelayer -persistenceLayerName mysql -department xyna -connectionType DEFAULT -persistenceLayerInstanceName Xyna-Infra-Default-Inst -persistenceLayerSpecifics Xyna-Infra-Pool 4000 
 ${XYNAFACTORY_SH} instantiatepersistencelayer -persistenceLayerName mysql -department xyna -connectionType HISTORY -persistenceLayerInstanceName Xyna-Infra-History-Inst -persistenceLayerSpecifics Xyna-Infra-Pool 4000 
 ${XYNAFACTORY_SH} registertable -c -persistenceLayerInstanceName Xyna-Infra-History-Inst -tableName orderinfo 

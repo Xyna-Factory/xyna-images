@@ -1,5 +1,5 @@
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Copyright 2023 Xyna GmbH, Germany
+# Copyright 2024 Xyna GmbH, Germany
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,11 +23,10 @@ RUN  cd /tmp/XynaFactoryBundle/ \
   && ./prepare_db_connector_jars.sh 
 
 # set up persistence layer
-ARG MYSQL_DATABASE="placeholder"
 ARG MYSQL_USER="placeholder"
 ARG MYSQL_PASSWORD="placeholder"
 ARG MYSQL_IPADDRESS="placeholder"
-ARG CONNECT_STRING="placeholder"
+ARG CONNECT_STRING="jdbc:mariadb://placeholder/xyna"
 ARG SIZE=10
 ARG XYNAFACTORY_SH=/opt/xyna/xyna_001/server/xynafactory.sh
 RUN <<-EOF

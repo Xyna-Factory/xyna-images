@@ -18,7 +18,7 @@ services:
     
    xyna:
      # platform: linux/amd64 #Has to be set for Mac users
-    image: xynafactory/latest
+    image: xynafactory/factory:latest
     # SYNC_CONTAINER_LIFECYCLE_TO_FACTORY: set to false to keep the container running independently of the xynafactory process
     environment:
       - SYNC_CONTAINER_LIFECYCLE_TO_FACTORY=true

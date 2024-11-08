@@ -17,7 +17,7 @@
  
 if [ $# -eq 0 ] || [ $1 == "--help" ]
 then
-  echo "Recursively changes all revisions in history-files to 0 (see DHICB-5766)"
+  echo "Recursively changes all revisions in history-files to 0"
   echo "Usage: xmomrepository_adjust_revision_history.sh [OPTION] DIR_XMOMREPOSITORY"
   echo "  -d Debug-mode: Only lists changes to be made, without applying them"
   exit

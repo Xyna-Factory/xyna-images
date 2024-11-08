@@ -17,7 +17,7 @@
  
 if [ $# -lt 3 ] || [ $# -gt 4 ] || [ $1 == "--help" ]
 then
-  echo "Merges entries from directory xmomrepository_readonly into xmomrepository and updates file runtimecontexts (see DHICB-4505)"
+  echo "Merges entries from directory xmomrepository_readonly into xmomrepository and updates file runtimecontexts"
   echo "Usage: xmomrepository.sh [OPTION] DIR_READONLY DIR_XMOMREPOSITORY PATH_RUNTIMECONTEXTS"
   echo "  -d Debug-mode: Only lists changes to be made, without applying them"
   exit

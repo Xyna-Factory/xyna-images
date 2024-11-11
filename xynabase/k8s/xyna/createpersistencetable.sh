@@ -36,10 +36,11 @@ echo "script: $4"
 
 CURSUM=$(find ${sourcedir} -type f -exec md5sum {} \; | sort | awk '{print $1}' | md5sum)
 OLDSUM=""
-if [ -f "${targetdir}/$md5sumFile" ]; 
+FILE="${targetdir}/${md5sumFile}"
+if [ -f "${FILE}" ]; 
 then
   echo "$FILE exists."
-  OLDSUM=$(cat ${targetdir}/$md5sumFile)
+  OLDSUM=$(cat ${FILE})
 fi
 
 echo "CURSUM: $CURSUM"
@@ -53,7 +54,7 @@ echo "check sums are not equal. call script: $script"
 $script
 mkdir -p $targetdir
 cp "$file" "$targetdir"
-echo "$CURSUM" > "${targetdir}/$md5sumFile"
+echo "$CURSUM" > "${targetdir}/${md5sumFile}"
 
 echo "DEBUG: md5ofFile @ xyna: $(md5sum $file)"
 exit 0

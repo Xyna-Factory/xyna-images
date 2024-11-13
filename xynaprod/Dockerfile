@@ -58,7 +58,7 @@ RUN ./xynafactory.sh start \
     && rm ./storage/defaultHISTORY/configurationmodcount.xml \
     && rm ./storage/defaultHISTORY/orderstatistics.xml \
     && mv ./storage/defaultHISTORY/pooldefinition.xml ./storage/HISTORYwriteable/pooldefinition.xml \
-    && mv ./storage/defaultHISTORY/userarchive.xml ./storage/HISTORYwriteable/userarchive.xml\
+    && mv ./storage/defaultHISTORY/userarchive.xml ./storage/HISTORYwriteable/userarchive.xml || true \
     && rm ./storage/defaultHISTORY/monitoringdispatcher.xml \
     && rm ./storage/defaultHISTORY/capacitymappings.xml \
     && rm ./storage/defaultHISTORY/rolearchive.xml \

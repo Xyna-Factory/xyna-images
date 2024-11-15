@@ -57,10 +57,11 @@ RUN python3 -m venv /etc/opt/xyna/environment/venv \
     && pip3 install --upgrade pip \
     && pip3 install jep \
     && pip3 uninstall -y setuptools \
-    && deactivate \
-    && pip3 uninstall -y setuptools
+    && deactivate
 
 USER root
+RUN pip3 uninstall -y setuptools
+
 
 # install prerequisites
 # create files in /etc/opt/xyna/environment: xynaContainer.properties black_edition_001.properties and xynaContainer.component.properties

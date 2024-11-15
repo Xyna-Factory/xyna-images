@@ -103,6 +103,7 @@ RUN /tmp/XynaBlackEdition/install_black_edition.sh -v -b -c xynafactory -x Globa
 
 
 USER root
+RUN /tmp/os/postprocess_os_packages.sh -o ${OS_IMAGE}
 
 COPY --chown=${XYNA_USER}:${XYNA_USER} k8s /k8s
 RUN chmod -R +x /k8s \
@@ -124,8 +125,6 @@ RUN chmod 777 /tmp/configlog.sh \
 && /tmp/configlog.sh stdout_nonblock \
 && sed -ri 's# <AppenderRef ref="SYSLOG"/># <AppenderRef ref="STDOUT"/>#' ${XYNA_PATH}/server/log4j2.xml \
 && sed -ri 's#  <Root level="[a-z]*">#  <Root level="warn">#' ${XYNA_PATH}/server/log4j2.xml
-
-RUN /tmp/os/postprocess_os_packages.sh -o ${OS_IMAGE}
 
 USER 4242:4242
 ENV HOSTNAME=xynaContainer

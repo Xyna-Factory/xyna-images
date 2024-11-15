@@ -60,8 +60,6 @@ RUN python3 -m venv /etc/opt/xyna/environment/venv \
     && deactivate
 
 USER root
-RUN pip3 uninstall -y setuptools
-
 
 # install prerequisites
 # create files in /etc/opt/xyna/environment: xynaContainer.properties black_edition_001.properties and xynaContainer.component.properties
@@ -126,6 +124,8 @@ RUN chmod 777 /tmp/configlog.sh \
 && /tmp/configlog.sh stdout_nonblock \
 && sed -ri 's# <AppenderRef ref="SYSLOG"/># <AppenderRef ref="STDOUT"/>#' ${XYNA_PATH}/server/log4j2.xml \
 && sed -ri 's#  <Root level="[a-z]*">#  <Root level="warn">#' ${XYNA_PATH}/server/log4j2.xml
+
+RUN /tmp/os/postprocess_os_packages.sh -o ${OS_IMAGE}
 
 USER 4242:4242
 ENV HOSTNAME=xynaContainer

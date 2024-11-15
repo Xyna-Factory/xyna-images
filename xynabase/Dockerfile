@@ -54,7 +54,9 @@ RUN mkdir /var/log/xyna \
 USER ${XYNA_USER}
 RUN python3 -m venv /etc/opt/xyna/environment/venv \
     && source /etc/opt/xyna/environment/venv/bin/activate \
+    && pip3 install --upgrade pip \
     && pip3 install jep \
+    && pip3 uninstall -y setuptools \
     && deactivate
 
 USER root

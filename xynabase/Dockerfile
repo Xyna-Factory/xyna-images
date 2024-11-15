@@ -57,7 +57,8 @@ RUN python3 -m venv /etc/opt/xyna/environment/venv \
     && pip3 install --upgrade pip \
     && pip3 install jep \
     && pip3 uninstall -y setuptools \
-    && deactivate
+    && deactivate \
+    && pip3 uninstall -y setuptools
 
 USER root
 

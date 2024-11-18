@@ -54,7 +54,9 @@ RUN mkdir /var/log/xyna \
 USER ${XYNA_USER}
 RUN python3 -m venv /etc/opt/xyna/environment/venv \
     && source /etc/opt/xyna/environment/venv/bin/activate \
+    && pip3 install --upgrade pip \
     && pip3 install jep \
+    && pip3 uninstall -y setuptools \
     && deactivate
 
 USER root
@@ -101,6 +103,7 @@ RUN /tmp/XynaBlackEdition/install_black_edition.sh -v -b -c xynafactory -x Globa
 
 
 USER root
+RUN /tmp/os/postprocess_os_packages.sh -o ${OS_IMAGE}
 
 COPY --chown=${XYNA_USER}:${XYNA_USER} k8s /k8s
 RUN chmod -R +x /k8s \

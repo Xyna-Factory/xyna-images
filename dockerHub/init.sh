@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ "$ENV_SYNC_CONTAINER_LIFECYCLE_TO_FACTORY" = true ]
+if [ "$SYNC_CONTAINER_LIFECYCLE_TO_FACTORY" = true ]
 then
     /k8s/xyna/factory.sh
 else

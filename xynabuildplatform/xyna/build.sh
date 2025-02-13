@@ -61,6 +61,7 @@ git clone --branch ${GIT_BRANCH_XYNA_MODELLER} --recurse-submodules ${GITHUB_REP
 NODEJS_VERSION=$(python3 get_nodejs_version.py --package_jsonfile ${PACKAGE_JSONFILE})
 echo "NODEJS_VERSION=${NODEJS_VERSION}"
 source $HOME/.nvm/nvm.sh
+vnm --version
 nvm install ${NODEJS_VERSION}
 nvm use ${NODEJS_VERSION}
 

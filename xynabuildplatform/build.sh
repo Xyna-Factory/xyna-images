@@ -16,6 +16,36 @@
 # limitations under the License.
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-. build.conf
-docker build --no-cache --build-arg OS_IMAGE=${OS_IMAGE} --build-arg JAVA_VERSION=${JAVA_VERSION} --build-arg NVM_VERSION=${NVM_VERSION} -f ${DOCKER_FILE} -t ${XYNA_BUILD_PLATFORM_IMAGE} .
+JAVA_VERSION=""
+NVM_VERSION=""
+OS_IMAGE=""
+XYNA_BUILDPLATFORM_IMAGE=""
+DOCKER_FILE="Dockerfile"
+
+usage() {
+    echo "Usage: $0 -j <JAVA-VERSION> -n <NVM_VERSION> -o <OS-IMAGE> -x <XYNA_BUILDPLATFORM_IMAGE>"
+    exit 1
+}
+
+while getopts ":j:n:o:x:" option; do
+    case "${option}" in
+        j)
+            JAVA_VERSION=${OPTARG}
+            ;;
+        n)
+            NVM_VERSION=${OPTARG}
+            ;;
+        o)
+            OS_IMAGE=${OPTARG}
+            ;;
+        x)
+            XYNA_BUILDPLATFORM_IMAGE=${OPTARG}
+            ;;
+        *)
+            usage
+            ;;
+    esac
+done
+
+docker build --build-arg OS_IMAGE=${OS_IMAGE} --build-arg JAVA_VERSION=${JAVA_VERSION} --build-arg NVM_VERSION=${NVM_VERSION} -f ${DOCKER_FILE} -t ${XYNA_BUILDPLATFORM_IMAGE} .
 

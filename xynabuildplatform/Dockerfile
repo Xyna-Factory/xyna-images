@@ -19,13 +19,14 @@ ARG OS_IMAGE=ubuntu:24.04
 FROM ${OS_IMAGE}
 ARG OS_IMAGE
 ARG JAVA_VERSION
+ARG MAVEN_VERSION
 ARG NVM_VERSION
 
 # install os packages
 RUN apt-get update && \
-    apt-get -yq install gnupg curl zip unzip git python3 vim
+    apt-get -yq install gnupg curl wget zip unzip git python3 vim
 
-# Install java and ant and maven and nvm
+# Install java
 RUN curl -s https://repos.azul.com/azul-repo.key | gpg --dearmor -o /usr/share/keyrings/azul.gpg  && \
     echo "deb [signed-by=/usr/share/keyrings/azul.gpg] https://repos.azul.com/zulu/deb stable main" | tee /etc/apt/sources.list.d/zulu.list  && \
     apt -y update && \
@@ -33,7 +34,18 @@ RUN curl -s https://repos.azul.com/azul-repo.key | gpg --dearmor -o /usr/share/k
     apt -y install zulu${JAVA_VERSION}-jdk-headless && \
     apt-get -y install ant && \
     apt-get -y install ant-contrib && \
-    apt-get -y install maven
+
+# Install ant
+RUN apt-get -y install ant && \
+    apt-get -y install ant-contrib
+
+# Install maven
+RUN wget https://dlcdn.apache.org/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz && \
+    tar xf apache-maven-${MAVEN_VERSION}-bin.tar.gz -C /opt && \
+    echo -e "\n# maven" >> /root/.bashrc && \
+    echo "export M3_HOME=/opt/apache-maven-${MAVEN_VERSION}" >> /root/.bashrc && \
+    echo "export MAVEN_HOME=/opt/apache-maven-${MAVEN_VERSION}" >> /root/.bashrc && \
+    echo "export PATH=/opt/apache-maven-${MAVEN_VERSION}/bin:${PATH}" >> /root/.bashrc
 
 # Install nvm
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh | bash

@@ -16,24 +16,26 @@
 # limitations under the License.
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+# https://github.com/nvm-sh/nvm/releases
+NVM_VERSION="v0.40.2"
+
+# https://maven.apache.org/docs/history.html
+MAVEN_VERSION="3.9.9"
+
 JAVA_VERSION=""
-NVM_VERSION=""
 OS_IMAGE=""
 XYNA_BUILDPLATFORM_IMAGE=""
 DOCKER_FILE="Dockerfile"
 
 usage() {
-    echo "Usage: $0 -j <JAVA-VERSION> -n <NVM_VERSION> -o <OS-IMAGE> -x <XYNA_BUILDPLATFORM_IMAGE>"
+    echo "Usage: $0 -j <JAVA-VERSION> -o <OS-IMAGE> -x <XYNA_BUILDPLATFORM_IMAGE>"
     exit 1
 }
 
-while getopts ":j:n:o:x:" option; do
+while getopts ":j:o:x:" option; do
     case "${option}" in
         j)
             JAVA_VERSION=${OPTARG}
-            ;;
-        n)
-            NVM_VERSION=${OPTARG}
             ;;
         o)
             OS_IMAGE=${OPTARG}
@@ -47,5 +49,5 @@ while getopts ":j:n:o:x:" option; do
     esac
 done
 
-docker build --build-arg OS_IMAGE=${OS_IMAGE} --build-arg JAVA_VERSION=${JAVA_VERSION} --build-arg NVM_VERSION=${NVM_VERSION} -f ${DOCKER_FILE} -t ${XYNA_BUILDPLATFORM_IMAGE} .
+docker build --build-arg OS_IMAGE=${OS_IMAGE} --build-arg JAVA_VERSION=${JAVA_VERSION} --build-arg MAVEN_VERSION=${MAVEN_VERSION} --build-arg NVM_VERSION=${NVM_VERSION} -f ${DOCKER_FILE} -t ${XYNA_BUILDPLATFORM_IMAGE} .
 

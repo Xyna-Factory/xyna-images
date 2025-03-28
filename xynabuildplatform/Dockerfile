@@ -37,23 +37,18 @@ RUN curl -s https://repos.azul.com/azul-repo.key | gpg --dearmor -o /usr/share/k
 RUN apt-get -y install ant && \
     apt-get -y install ant-contrib
 
+
 # Install maven
 RUN wget https://dlcdn.apache.org/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz && \
     tar xf apache-maven-${MAVEN_VERSION}-bin.tar.gz -C /opt && \
-    echo "# maven" >> /root/.profile && \
-    echo "export M3_HOME=/opt/apache-maven-${MAVEN_VERSION}" >> /root/.profile && \
-    echo "export MAVEN_HOME=/opt/apache-maven-${MAVEN_VERSION}" >> /root/.profile && \
-    echo "export PATH=/opt/apache-maven-${MAVEN_VERSION}/bin:${PATH}" >> /root/.profile  && \
+    sed -i -e 's/\[ -z "$PS1" \] \&\& return/#\[ -z "$PS1" \] \&\& return/g' /root/.bashrc && \
     echo "# maven" >> /root/.bashrc && \
     echo "export M3_HOME=/opt/apache-maven-${MAVEN_VERSION}" >> /root/.bashrc && \
     echo "export MAVEN_HOME=/opt/apache-maven-${MAVEN_VERSION}" >> /root/.bashrc && \
     echo "export PATH=/opt/apache-maven-${MAVEN_VERSION}/bin:${PATH}" >> /root/.bashrc
 
 # Install nvm
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh | bash && \
-    echo "# nvm" >> /root/.profile && \
-    echo "export NVM_DIR="/root/.nvm"" >> /root/.profile && \
-    echo "[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm" >> /root/.profile
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh | bash
 
 
 RUN mkdir -p /xyna

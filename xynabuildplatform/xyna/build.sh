@@ -28,8 +28,6 @@ PACKAGE_JSONFILE="xyna-modeller/impl/projects/xyna/src/app/zeta/package.json"
 GIT_BRANCH_XYNA_FACTORY=""
 GIT_BRANCH_XYNA_MODELLER=""
 
-SCRIPT_DIR=$(dirname "$0")
-
 usage() {
     echo "Usage: $0 -f <GIT_BRANCH_XYNA_FACTORY> -m <GIT_BRANCH_XYNA_MODELLER>"
     exit 1
@@ -66,8 +64,10 @@ git clone --branch ${GIT_BRANCH_XYNA_MODELLER} --recurse-submodules ${GITHUB_REP
 
 echo "NODEJS_VERSION=$(python3 get_nodejs_version.py --package_jsonfile ${PACKAGE_JSONFILE})"
 NODEJS_VERSION=$(python3 get_nodejs_version.py --package_jsonfile ${PACKAGE_JSONFILE})
-echo "${SCRIPT_DIR}/install_nodejs.sh -v ${NODEJS_VERSION}"
-${SCRIPT_DIR}/install_nodejs.sh -v ${NODEJS_VERSION}
+echo "nvm install ${NODEJS_VERSION}"
+nvm install ${NODEJS_VERSION}
+echo "nvm use ${NODEJS_VERSION}"
+nvm use ${NODEJS_VERSION}
 
 cd xyna-factory/installation/build
 python3 checkAppVersions.py

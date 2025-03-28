@@ -43,7 +43,11 @@ RUN wget https://dlcdn.apache.org/maven/maven-3/${MAVEN_VERSION}/binaries/apache
     echo -e "\n# maven" >> /root/.profile && \
     echo "export M3_HOME=/opt/apache-maven-${MAVEN_VERSION}" >> /root/.profile && \
     echo "export MAVEN_HOME=/opt/apache-maven-${MAVEN_VERSION}" >> /root/.profile && \
-    echo "export PATH=/opt/apache-maven-${MAVEN_VERSION}/bin:${PATH}" >> /root/.profile
+    echo "export PATH=/opt/apache-maven-${MAVEN_VERSION}/bin:${PATH}" >> /root/.profile  && \
+    echo -e "\n# maven" >> /root/.bashrc && \
+    echo "export M3_HOME=/opt/apache-maven-${MAVEN_VERSION}" >> /root/.bashrc && \
+    echo "export MAVEN_HOME=/opt/apache-maven-${MAVEN_VERSION}" >> /root/.bashrc && \
+    echo "export PATH=/opt/apache-maven-${MAVEN_VERSION}/bin:${PATH}" >> /root/.bashrc
 
 # Install nvm
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh | bash && \

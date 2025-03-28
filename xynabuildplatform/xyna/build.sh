@@ -58,14 +58,10 @@ rm -rf xyna-factory
 rm -rf xyna-modeller
 git clone --branch ${GIT_BRANCH_XYNA_FACTORY} ${GITHUB_REPOSITORY_XYNA_FACTORY}
 git clone --branch ${GIT_BRANCH_XYNA_MODELLER} --recurse-submodules ${GITHUB_REPOSITORY_XYNA_MODELLER}
-source $HOME/.nvm/nvm.sh
-NVM_VERSION=$(nvm --version)
-echo "NVM_VERSION=${NVM_VERSION}"
 
 NODEJS_VERSION=$(python3 get_nodejs_version.py --package_jsonfile ${PACKAGE_JSONFILE})
-echo "NODEJS_VERSION=${NODEJS_VERSION}"
-nvm install ${NODEJS_VERSION}
-nvm use ${NODEJS_VERSION}
+echo "install_nodejs -v ${NODEJS_VERSION}"
+install_nodejs -v ${NODEJS_VERSION}
 
 cd xyna-factory/installation/build
 python3 checkAppVersions.py

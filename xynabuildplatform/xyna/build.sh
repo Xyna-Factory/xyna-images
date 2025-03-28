@@ -62,7 +62,6 @@ rm -rf xyna-modeller
 git clone --branch ${GIT_BRANCH_XYNA_FACTORY} ${GITHUB_REPOSITORY_XYNA_FACTORY}
 git clone --branch ${GIT_BRANCH_XYNA_MODELLER} --recurse-submodules ${GITHUB_REPOSITORY_XYNA_MODELLER}
 
-echo "NODEJS_VERSION=$(python3 get_nodejs_version.py --package_jsonfile ${PACKAGE_JSONFILE})"
 NODEJS_VERSION=$(python3 get_nodejs_version.py --package_jsonfile ${PACKAGE_JSONFILE})
 echo "nvm install ${NODEJS_VERSION}"
 nvm install ${NODEJS_VERSION}

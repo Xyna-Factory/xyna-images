@@ -31,9 +31,7 @@ RUN curl -s https://repos.azul.com/azul-repo.key | gpg --dearmor -o /usr/share/k
     echo "deb [signed-by=/usr/share/keyrings/azul.gpg] https://repos.azul.com/zulu/deb stable main" | tee /etc/apt/sources.list.d/zulu.list  && \
     apt -y update && \
     apt -y upgrade && \
-    apt -y install zulu${JAVA_VERSION}-jdk-headless && \
-    apt-get -y install ant && \
-    apt-get -y install ant-contrib && \
+    apt -y install zulu${JAVA_VERSION}-jdk-headless
 
 # Install ant
 RUN apt-get -y install ant && \
@@ -48,7 +46,7 @@ RUN wget https://dlcdn.apache.org/maven/maven-3/${MAVEN_VERSION}/binaries/apache
     echo "export PATH=/opt/apache-maven-${MAVEN_VERSION}/bin:${PATH}" >> /root/.profile
 
 # Install nvm
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh | bash
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh | bash && \
     echo -e "\n# nvm" >> /root/.profile && \
     echo "export NVM_DIR="/root/.nvm"" >> /root/.profile && \
     echo "[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm" >> /root/.profile

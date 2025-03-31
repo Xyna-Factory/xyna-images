@@ -20,7 +20,7 @@ set -e # enable errexit option
 set -u # enable nounset option
 set -o pipefail
 
-. $HOME/.nvm/nvm.sh
+. $NVM_DIR/nvm.sh
 
 GITHUB_REPOSITORY_XYNA_FACTORY="https://github.com/xyna-factory/xyna-factory.git"
 GITHUB_REPOSITORY_XYNA_MODELLER="https://github.com/xyna-factory/xyna-modeller.git"

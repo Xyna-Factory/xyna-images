@@ -45,11 +45,15 @@ RUN wget https://dlcdn.apache.org/maven/maven-3/${MAVEN_VERSION}/binaries/apache
     echo "# maven" >> /root/.bashrc && \
     echo "export M3_HOME=/opt/apache-maven-${MAVEN_VERSION}" >> /root/.bashrc && \
     echo "export MAVEN_HOME=/opt/apache-maven-${MAVEN_VERSION}" >> /root/.bashrc && \
-    echo "export PATH=/opt/apache-maven-${MAVEN_VERSION}/bin:${PATH}" >> /root/.bashrc
+    echo "export PATH=${PATH}:/opt/apache-maven-${MAVEN_VERSION}/bin" >> /root/.bashrc
 
 # Install nvm
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh | bash
 
+ENV M3_HOME="/opt/apache-maven-${MAVEN_VERSION}"
+ENV MAVEN_HOME="/opt/apache-maven-${MAVEN_VERSION}"
+ENV PATH="PATH=$PATH:/opt/apache-maven-${MAVEN_VERSION}/bin:$HOME/.nvm"
+ENV NVM_DIR="$HOME/.nvm"
 
 RUN mkdir -p /xyna
 COPY xyna /xyna

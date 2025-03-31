@@ -50,11 +50,11 @@ RUN wget https://dlcdn.apache.org/maven/maven-3/${MAVEN_VERSION}/binaries/apache
 # Install nvm
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh | bash
 
+ENV JAVA_HOME=/usr/lib/jvm/zulu${JAVA_VERSION}
 ENV M3_HOME="/opt/apache-maven-${MAVEN_VERSION}"
 ENV MAVEN_HOME="/opt/apache-maven-${MAVEN_VERSION}"
-ENV NVM_DIR="$HOME/.nvm"
-ENV PATH="PATH=$PATH:/opt/apache-maven-${MAVEN_VERSION}/bin:${NVM_DIR}"
-
+ENV NVM_DIR="/root/.nvm"
+ENV PATH="PATH=$PATH:/opt/apache-maven-${MAVEN_VERSION}/bin"
 
 RUN mkdir -p /xyna
 COPY xyna /xyna

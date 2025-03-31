@@ -16,8 +16,9 @@
 
 # syntax=docker/dockerfile:1
 ARG XYNABASE_IMAGE=xynabase:xynamain-imagemain-java11-ubuntu24.04
-ARG HTTP_TRIGGER_INTERFACE_CHOICE="0\n"
 FROM ${XYNABASE_IMAGE}
+
+ARG HTTP_TRIGGER_INTERFACE_CHOICE="0\n"
 
 COPY --chown=${XYNA_USER}:${XYNA_USER} GitIntegration*.app /tmp/
 

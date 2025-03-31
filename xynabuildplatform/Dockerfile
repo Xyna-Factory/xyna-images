@@ -52,8 +52,9 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install
 
 ENV M3_HOME="/opt/apache-maven-${MAVEN_VERSION}"
 ENV MAVEN_HOME="/opt/apache-maven-${MAVEN_VERSION}"
-ENV PATH="PATH=$PATH:/opt/apache-maven-${MAVEN_VERSION}/bin:$HOME/.nvm"
 ENV NVM_DIR="$HOME/.nvm"
+ENV PATH="PATH=$PATH:/opt/apache-maven-${MAVEN_VERSION}/bin:${NVM_DIR}"
+
 
 RUN mkdir -p /xyna
 COPY xyna /xyna

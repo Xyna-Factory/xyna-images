@@ -20,10 +20,13 @@ set -e # enable errexit option
 set -u # enable nounset option
 set -o pipefail
 
+. $NVM_DIR/nvm.sh
+
+GITHUB_REPOSITORY_XYNA_FACTORY="https://github.com/xyna-factory/xyna-factory.git"
+GITHUB_REPOSITORY_XYNA_MODELLER="https://github.com/xyna-factory/xyna-modeller.git"
+PACKAGE_JSONFILE="xyna-modeller/impl/projects/xyna/src/app/zeta/package.json"
 GIT_BRANCH_XYNA_FACTORY=""
 GIT_BRANCH_XYNA_MODELLER=""
-
-. build.conf
 
 usage() {
     echo "Usage: $0 -f <GIT_BRANCH_XYNA_FACTORY> -m <GIT_BRANCH_XYNA_MODELLER>"
@@ -58,13 +61,11 @@ rm -rf xyna-factory
 rm -rf xyna-modeller
 git clone --branch ${GIT_BRANCH_XYNA_FACTORY} ${GITHUB_REPOSITORY_XYNA_FACTORY}
 git clone --branch ${GIT_BRANCH_XYNA_MODELLER} --recurse-submodules ${GITHUB_REPOSITORY_XYNA_MODELLER}
-source $HOME/.nvm/nvm.sh
-NVM_VERSION=$(nvm --version)
-echo "NVM_VERSION=${NVM_VERSION}"
 
 NODEJS_VERSION=$(python3 get_nodejs_version.py --package_jsonfile ${PACKAGE_JSONFILE})
-echo "NODEJS_VERSION=${NODEJS_VERSION}"
+echo "nvm install ${NODEJS_VERSION}"
 nvm install ${NODEJS_VERSION}
+echo "nvm use ${NODEJS_VERSION}"
 nvm use ${NODEJS_VERSION}
 
 cd xyna-factory/installation/build

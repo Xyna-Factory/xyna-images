@@ -30,12 +30,12 @@ ${XYNAFACTORY_SH} addconnectionpool -connectstring jdbc:mariadb://placeholder/xy
 ${XYNAFACTORY_SH} instantiatepersistencelayer -persistenceLayerName mysql -department xyna -connectionType DEFAULT -persistenceLayerInstanceName Xyna-Infra-Default-Inst -persistenceLayerSpecifics Xyna-Infra-Pool 4000 zippedBlobs=true
 ${XYNAFACTORY_SH} instantiatepersistencelayer -persistenceLayerName mysql -department xyna -connectionType HISTORY -persistenceLayerInstanceName Xyna-Infra-History-Inst -persistenceLayerSpecifics Xyna-Infra-Pool 4000 zippedBlobs=true
 ${XYNAFACTORY_SH} set xyna.xprc.xprcods.orderarchive.auditxml.binary true
-${XYNAFACTORY_SH} registertable -c -persistenceLayerInstanceName Xyna-Infra-History-Inst -tableName orderinfo
-${XYNAFACTORY_SH} registertable -c -persistenceLayerInstanceName Xyna-Infra-History-Inst -tableName orderarchive
+${XYNAFACTORY_SH} registertable -persistenceLayerInstanceName Xyna-Infra-History-Inst -tableName orderinfo
+${XYNAFACTORY_SH} registertable -persistenceLayerInstanceName Xyna-Infra-History-Inst -tableName orderarchive
 ${XYNAFACTORY_SH} registertable -persistenceLayerInstanceName Xyna-Infra-Default-Inst -tableName orderbackup
-${XYNAFACTORY_SH} registertable -c -persistenceLayerInstanceName Xyna-Infra-Default-Inst -tableName codegroup
-${XYNAFACTORY_SH} registertable -c -persistenceLayerInstanceName Xyna-Infra-Default-Inst -tableName codepattern
-${XYNAFACTORY_SH} registertable -c -persistenceLayerInstanceName Xyna-Infra-Default-Inst -tableName idgeneration
+${XYNAFACTORY_SH} registertable -persistenceLayerInstanceName Xyna-Infra-Default-Inst -tableName codegroup
+${XYNAFACTORY_SH} registertable -persistenceLayerInstanceName Xyna-Infra-Default-Inst -tableName codepattern
+${XYNAFACTORY_SH} registertable -persistenceLayerInstanceName Xyna-Infra-Default-Inst -tableName idgeneration
 ${XYNAFACTORY_SH} registertable -persistenceLayerInstanceName Xyna-Infra-Default-Inst -tableName cronlikeorders
 ${XYNAFACTORY_SH} registertable -persistenceLayerInstanceName Xyna-Infra-History-Inst -tableName cronlikeorders
 ${XYNAFACTORY_SH} set xnwh.persistence.xmom.defaultpersistencelayerid $(${XYNAFACTORY_SH} listpersistencelayerinstances | grep Xyna-Infra-Default-Inst | awk '{ print $2 }')

@@ -50,9 +50,6 @@ if [[ ${OS_IMAGE} == oraclelinux:* ]]; then
     yum -y update
     yum -y upgrade
     yum install -y zip unzip patch wget openssl nc which net-tools passwd rsyslog bind-utils vim less telnet procps bc diffutils hostname perl gcc python3-devel
-    if [[ ${OS_IMAGE} == oraclelinux:7* ]]; then
-        yum install -y xinetd
-    fi
     yum install -y zulu${JAVA_VERSION}-jdk-headless
     yum clean all
 elif [[ ${OS_IMAGE} == redhat/ubi*:* ]]; then

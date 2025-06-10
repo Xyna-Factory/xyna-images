@@ -39,7 +39,7 @@ RUN apt-get -y install ant && \
 
 
 # Install maven
-RUN wget https://dlcdn.apache.org/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz && \
+RUN wget https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_VERSION}/apache-maven-${MAVEN_VERSION}-bin.tar.gz && \
     tar xf apache-maven-${MAVEN_VERSION}-bin.tar.gz -C /opt && \
     sed -i -e 's/\[ -z "$PS1" \] \&\& return/#\[ -z "$PS1" \] \&\& return/g' /root/.bashrc && \
     echo "# maven" >> /root/.bashrc && \

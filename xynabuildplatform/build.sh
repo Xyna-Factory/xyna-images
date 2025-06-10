@@ -20,7 +20,7 @@
 NVM_VERSION="v0.40.2"
 
 # https://maven.apache.org/docs/history.html
-MAVEN_VERSION="3.9.9"
+MAVEN_VERSION="3.9.10"
 
 JAVA_VERSION=""
 OS_IMAGE=""

@@ -20,6 +20,8 @@ FROM ${OS_IMAGE}
 ARG OS_IMAGE
 ARG JAVA_VERSION
 ARG MAVEN_VERSION
+ARG MAVEN_RESOLVER_ANT_TASKS_VERSION
+ARG ANT_CONTRIB_TASKS_VERSION
 ARG NVM_VERSION
 
 # install os packages
@@ -37,6 +39,10 @@ RUN curl -s https://repos.azul.com/azul-repo.key | gpg --dearmor -o /usr/share/k
 RUN apt-get -y install ant && \
     apt-get -y install ant-contrib
 
+# Install maven-resolver-ant-tasks and ant-contrib-tasks
+RUN mkdir -p ${HOME}/.ant/lib && \
+    curl -s https://repo1.maven.org/maven2/org/apache/maven/resolver/maven-resolver-ant-tasks/${MAVEN_RESOLVER_ANT_TASKS_VERSION}/maven-resolver-ant-tasks-${MAVEN_RESOLVER_ANT_TASKS_VERSION}-uber.jar -o "${HOME}/.ant/lib/maven-resolver-ant-tasks-${MAVEN_RESOLVER_ANT_TASKS_VERSION}-uber.jar" && \
+    curl -s https://repo1.maven.org/maven2/ant-contrib/ant-contrib/${ANT_CONTRIB_TASKS_VERSION}/ant-contrib-${ANT_CONTRIB_TASKS_VERSION}.jar -o "${HOME}/.ant/lib/ant-contrib-${ANT_CONTRIB_TASKS_VERSION}.jar"
 
 # Install maven
 RUN wget https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_VERSION}/apache-maven-${MAVEN_VERSION}-bin.tar.gz && \

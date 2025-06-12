@@ -22,12 +22,6 @@ NVM_VERSION="v0.40.2"
 # https://maven.apache.org/docs/history.html
 MAVEN_VERSION="3.9.10"
 
-# https://mvnrepository.com/artifact/org.apache.maven.resolver/maven-resolver-ant-tasks
-MAVEN_RESOLVER_ANT_TASKS_VERSION="1.5.2"
-
-# https://mvnrepository.com/artifact/ant-contrib/ant-contrib
-ANT_CONTRIB_TASKS_VERSION="1.0b3"
-
 JAVA_VERSION=""
 OS_IMAGE=""
 XYNA_BUILDPLATFORM_IMAGE=""
@@ -55,5 +49,5 @@ while getopts ":j:o:x:" option; do
     esac
 done
 
-docker build --build-arg OS_IMAGE=${OS_IMAGE} --build-arg JAVA_VERSION=${JAVA_VERSION} --build-arg MAVEN_VERSION=${MAVEN_VERSION} --build-arg MAVEN_RESOLVER_ANT_TASKS_VERSION=${MAVEN_RESOLVER_ANT_TASKS_VERSION} --build-arg ANT_CONTRIB_TASKS_VERSION=${ANT_CONTRIB_TASKS_VERSION} --build-arg NVM_VERSION=${NVM_VERSION} -f ${DOCKER_FILE} -t ${XYNA_BUILDPLATFORM_IMAGE} .
+docker build --build-arg OS_IMAGE=${OS_IMAGE} --build-arg JAVA_VERSION=${JAVA_VERSION} --build-arg MAVEN_VERSION=${MAVEN_VERSION} --build-arg NVM_VERSION=${NVM_VERSION} -f ${DOCKER_FILE} -t ${XYNA_BUILDPLATFORM_IMAGE} .
 

@@ -72,6 +72,7 @@ cd xyna-factory/installation/build
 python3 checkAppVersions.py
 cd -
 cd xyna-factory/installation
+./build.sh install_libs
 ./build.sh all -b ${GIT_BRANCH_XYNA_MODELLER}
 cd -
 cp xyna-factory/*.zip .

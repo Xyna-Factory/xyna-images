@@ -22,12 +22,12 @@ set -o pipefail
 
 . $NVM_DIR/nvm.sh
 
-GITHUB_REPOSITORY_XYNA_FACTORY="https://github.com/xyna-factory/xyna-factory.git"
-GITHUB_REPOSITORY_XYNA_MODELLER="https://github.com/xyna-factory/xyna-modeller.git"
-PACKAGE_JSONFILE="xyna-modeller/impl/projects/xyna/src/app/zeta/package.json"
+. build.conf
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 GIT_BRANCH_XYNA_FACTORY=""
 GIT_BRANCH_XYNA_MODELLER=""
-SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
 
 usage() {
     echo "Usage: $0 -f <GIT_BRANCH_XYNA_FACTORY> -m <GIT_BRANCH_XYNA_MODELLER>"

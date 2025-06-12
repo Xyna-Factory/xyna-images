@@ -37,7 +37,6 @@ RUN curl -s https://repos.azul.com/azul-repo.key | gpg --dearmor -o /usr/share/k
 RUN apt-get -y install ant && \
     apt-get -y install ant-contrib
 
-
 # Install maven
 RUN wget https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_VERSION}/apache-maven-${MAVEN_VERSION}-bin.tar.gz && \
     tar xf apache-maven-${MAVEN_VERSION}-bin.tar.gz -C /opt && \

@@ -75,4 +75,4 @@ cd ${SCRIPT_DIR}/xyna-factory/installation
 ./build.sh install_libs
 ./build.sh all -b ${GIT_BRANCH_XYNA_MODELLER}
 cp ${SCRIPT_DIR}/xyna-factory/*.zip ${SCRIPT_DIR}
-ls -l
+ls -l ${SCRIPT_DIR}

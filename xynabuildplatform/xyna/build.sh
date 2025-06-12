@@ -22,9 +22,9 @@ set -o pipefail
 
 . $NVM_DIR/nvm.sh
 
-. build.conf
-
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+. ${SCRIPT_DIR}/build.conf
+
 GIT_BRANCH_XYNA_FACTORY=""
 GIT_BRANCH_XYNA_MODELLER=""
 

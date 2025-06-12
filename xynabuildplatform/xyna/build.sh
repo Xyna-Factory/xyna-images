@@ -27,6 +27,7 @@ GITHUB_REPOSITORY_XYNA_MODELLER="https://github.com/xyna-factory/xyna-modeller.g
 PACKAGE_JSONFILE="xyna-modeller/impl/projects/xyna/src/app/zeta/package.json"
 GIT_BRANCH_XYNA_FACTORY=""
 GIT_BRANCH_XYNA_MODELLER=""
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 usage() {
     echo "Usage: $0 -f <GIT_BRANCH_XYNA_FACTORY> -m <GIT_BRANCH_XYNA_MODELLER>"
@@ -68,12 +69,10 @@ nvm install ${NODEJS_VERSION}
 echo "nvm use ${NODEJS_VERSION}"
 nvm use ${NODEJS_VERSION}
 
-cd xyna-factory/installation/build
+cd ${SCRIPT_DIR}/xyna-factory/installation/build
 python3 checkAppVersions.py
-cd -
-cd xyna-factory/installation
+cd ${SCRIPT_DIR}/xyna-factory/installation
 ./build.sh install_libs
 ./build.sh all -b ${GIT_BRANCH_XYNA_MODELLER}
-cd -
-cp xyna-factory/*.zip .
+cp ${SCRIPT_DIR}/xyna-factory/*.zip ${SCRIPT_DIR}
 ls -l

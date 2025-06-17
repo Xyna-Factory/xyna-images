@@ -39,7 +39,9 @@ fi
 
 
 if [[ ${OS_IMAGE} == oraclelinux:* ]]; then
-    pip3 uninstall -y setuptools
+    if [[ ${OS_IMAGE} == oraclelinux:8 ]]; then
+        pip3 uninstall -y setuptools
+    fi
 elif [[ ${OS_IMAGE} == redhat/ubi*:* ]]; then
     pip3 uninstall -y setuptools
 elif [[ ${OS_IMAGE} == ubuntu:* ]]; then

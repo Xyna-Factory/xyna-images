@@ -21,7 +21,9 @@ FROM ${OS_IMAGE}
 SHELL ["/bin/bash", "-c"]
 
 COPY modeller.war /tmp
-COPY apache2/000-default.conf /etc/apache2/sites-available/
+COPY apache2/ports.conf /etc/apache2
+COPY apache2/000-default.conf /etc/apache2/sites-available
+
 
 RUN apt -y update \
     && apt-get -y install less zip unzip

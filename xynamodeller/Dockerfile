@@ -26,6 +26,8 @@ COPY apache2/000-default.conf /etc/apache2/sites-available/
 RUN apt -y update \
     && apt-get -y install less zip unzip
 
-RUN a2enmod rewrite
+RUN a2enmod proxy \
+    && a2enmod proxy_http \
+    && a2enmod rewrite
 
 RUN unzip /tmp/modeller.war -d /var/www/html/modeller

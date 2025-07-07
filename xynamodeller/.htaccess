@@ -1,4 +1,0 @@
-RewriteEngine on
-RewriteCond "%{HTTP_HOST}"   "!^$"
-RewriteRule "^modeller-api/?(.*)"        "<xyna-url>/$1" [L,R,NE]
-

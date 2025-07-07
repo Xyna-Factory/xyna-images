@@ -15,8 +15,8 @@
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # syntax=docker/dockerfile:1
-ARG OS_IMAGE=ubuntu/apache2:latest
-FROM ${OS_IMAGE}
+ARG APACHE2_IMAGE=ubuntu/apache2:latest
+FROM ${APACHE2_IMAGE}
 
 SHELL ["/bin/bash", "-c"]
 

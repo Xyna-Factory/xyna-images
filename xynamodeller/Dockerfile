@@ -26,4 +26,4 @@ COPY apache2/000-default.conf /etc/apache2/sites-available/
 RUN apt -y update \
     && apt-get -y install less zip unzip
 
-RUN unzip modeller.war -d /var/www/html/modeller
+RUN unzip /tmp/modeller.war -d /var/www/html/modeller

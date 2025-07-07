@@ -15,15 +15,13 @@
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # syntax=docker/dockerfile:1
-ARG APACHE_IMAGE=ubuntu/apache2:latest
-FROM ${APACHE_IMAGE}
-
+ARG OS_IMAGE=ubuntu/apache2:latest
+FROM ${OS_IMAGE}
 
 SHELL ["/bin/bash", "-c"]
 
 COPY modeller.war /tmp
 COPY 000-default.conf /etc/apache2/sites-available/
-
 
 RUN apt -y update \
     && apt-get -y install less zip unzip

@@ -32,6 +32,7 @@ RUN a2enmod ssl \
     && a2enmod proxy_http \
     && a2enmod proxy_html \
     && a2enmod rewrite \
-    && a2enmod deflate
+    && a2enmod deflate \
+    && a2ensite default-ssl
 
 RUN unzip /tmp/modeller.war -d /var/www/html/modeller

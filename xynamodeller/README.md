@@ -13,7 +13,7 @@ docker build --build-arg -t xynamodeller:MYVERSION .
 For running a xynamodeller container have to:
 * Define the following ENV Variables
   * XYNA_HOSTNAME: Hostname of the xyna-factoy (Default: xyna)
-  * MODELLER_PORT: http port on which the xynamodeller can be reached (Default: /var/log/apache2)
+  * MODELLER_PORT: http port on which the xynamodeller can be reached (Default: 8000)
   * APACHE_LOG_DIR: Directory where apache write log files (Default: var/log/apache2)
   * APACHE_SERVER_NAME: ServerName of the Apache(Default: xyna)
 * Execute the following command:

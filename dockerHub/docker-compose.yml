@@ -1,9 +1,7 @@
 services:
    mariadb:
     image: mariadb:11.8
-    # Possible values for pull_policy are: 
-    # always: Compose always pulls the image from the registry.
-    # missing: Compose pulls the image only if it's not available in the platform cache. This is the default option
+    # see https://docs.docker.com/reference/compose-file/services/#pull_policy
     pull_policy: missing
     restart: unless-stopped
     environment:
@@ -23,9 +21,7 @@ services:
    xyna:
      # platform: linux/amd64 #Has to be set for Mac users
     image: xynafactory/factory:latest
-    # Possible values for pull_policy are: 
-    # always: Compose always pulls the image from the registry.
-    # missing: Compose pulls the image only if it's not available in the platform cache. This is the default option
+    # see https://docs.docker.com/reference/compose-file/services/#pull_policy
     pull_policy: missing
     # SYNC_CONTAINER_LIFECYCLE_TO_FACTORY: set to false to keep the container running independently of the xynafactory process
     environment:
@@ -82,9 +78,7 @@ services:
 
    modeller:
     image: xynafactory/modeller:latest
-    # Possible values for pull_policy are: 
-    # always: Compose always pulls the image from the registry.
-    # missing: Compose pulls the image only if it's not available in the platform cache. This is the default option
+    # see https://docs.docker.com/reference/compose-file/services/#pull_policy
     pull_policy: missing
     entrypoint: ["apachectl", "-D", "FOREGROUND"]
     environment:

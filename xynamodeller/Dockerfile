@@ -17,6 +17,7 @@
 # syntax=docker/dockerfile:1
 ARG APACHE2_IMAGE=ubuntu/apache2:latest
 FROM ${APACHE2_IMAGE}
+ENV APACHE_LOG_DIR=/var/log
 
 SHELL ["/bin/bash", "-c"]
 

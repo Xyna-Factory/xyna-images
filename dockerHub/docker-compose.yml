@@ -79,7 +79,6 @@ services:
       - MODELLER_PORT=8000
       - XYNA_HOSTNAME=xyna
       - APACHE_LOG_DIR=/var/log/apache2
-      - APACHE_SERVER_NAME=xyna
     ports:
       - 8000:8000
     depends_on:

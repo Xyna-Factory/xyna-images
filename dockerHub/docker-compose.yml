@@ -77,10 +77,9 @@ services:
     entrypoint: ["apachectl", "-D", "FOREGROUND"]
     environment:
       - MODELLER_PORT=8000
-      - MODELLER_HOSTNAME="xyna"
-      - GUIHTTP_URL="http://xyna:4245"
-      - GUIHTTP_COOKIE_FLAGS="off"
-      - RESOLVER="127.0.0.11"
+      - XYNA_HOSTNAME="xyna"
+      - APACHE_LOG_DIR="/var/log/apache2"
+      - APACHE_SERVER_NAME="xyna"
     ports:
       - 8000:8000
     depends_on:

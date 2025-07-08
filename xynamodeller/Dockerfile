@@ -20,7 +20,7 @@ FROM ${APACHE2_IMAGE}
 ENV APACHE_LOG_DIR=/var/log/apache2
 ENV MODELLER_PORT=8000
 ENV XYNA_HOSTNAME="xyna"
-END SERVER_NAME="xyna"
+ENV SERVER_NAME="xyna"
 
 SHELL ["/bin/bash", "-c"]
 

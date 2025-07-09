@@ -87,6 +87,7 @@ services:
       - XYNA_HOSTNAME=xyna
       - APACHE_LOG_DIR=/var/log/apache2
     ports:
+     # see https://docs.docker.com/engine/network/#published-ports
       - 8000:8000
     depends_on:
       - xyna

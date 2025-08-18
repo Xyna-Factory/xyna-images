@@ -24,6 +24,7 @@ RUN  cd /tmp/XynaFactoryBundle/ \
 
 # set up persistence layer
 ARG XYNAFACTORY_SH=/opt/xyna/xyna_001/server/xynafactory.sh
+ARG XMOMREPOSITORY=/opt/xyna/xyna_001/xmomrepository
 RUN <<-EOF
 ${XYNAFACTORY_SH} start
 ${XYNAFACTORY_SH} addconnectionpool -connectstring jdbc:mariadb://placeholder/xyna -name Xyna-Infra-Pool -size 10 -type Mock_MySQL -user placeholder -password placeholder
@@ -41,6 +42,8 @@ ${XYNAFACTORY_SH} registertable -persistenceLayerInstanceName Xyna-Infra-History
 ${XYNAFACTORY_SH} set xnwh.persistence.xmom.defaultpersistencelayerid $(${XYNAFACTORY_SH} listpersistencelayerinstances | grep Xyna-Infra-Default-Inst | awk '{ print $2 }')
 ${XYNAFACTORY_SH} set xnwh.persistence.xmom.defaulthistorypersistencelayerid $(${XYNAFACTORY_SH} listpersistencelayerinstances | grep Xyna-Infra-History-Inst | awk '{ print $2 }')
 ${XYNAFACTORY_SH} stop
+/k8s/xyna/xmomrepository_adjust_revision.sh ${XMOMREPOSITORY}
+/k8s/xyna/xmomrepository_adjust_revision_history.sh ${XMOMREPOSITORY}
 EOF
 
 COPY --chown=${XYNA_USER}:${XYNA_USER} init.sh /tmp/

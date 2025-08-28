@@ -27,7 +27,7 @@ services:
     pull_policy: ${XYNA_PULL_POLICY}
     # SYNC_CONTAINER_LIFECYCLE_TO_FACTORY: set to false to keep the container running independently of the xynafactory process
     environment:
-      - SYNC_CONTAINER_LIFECYCLE_TO_FACTORY=true
+      - SYNC_CONTAINER_LIFECYCLE_TO_FACTORY=${XYNA_SYNC_CONTAINER_LIFECYCLE_TO_FACTORY}
       - USERARCHIVE_XMLFILEPATH=defaultHISTORY/userarchive.xml
       - USERARCHIVE_MOUNTDIRECTORY=/userarchive
       - POOLDEFINITION_XMLFILEPATH=defaultHISTORY/pooldefinition.xml

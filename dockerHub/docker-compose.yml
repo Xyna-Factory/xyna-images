@@ -67,11 +67,11 @@ services:
     expose:
       - 4245
     healthcheck:
-      test: "echo -n $$'status\x1D\x1D\x04' | nc 127.0.0.1 4242 2>&1"
-      interval: 1s
+      test: ["CMD-SHELL", "/opt/xyna/xyna_001/server/xynafactory.sh status"]
+      interval: 5s
       timeout: 5s
       retries: 60
-      start_period: 180s
+      start_period: 10s
     depends_on:
       mariadb:
         condition: service_healthy

@@ -16,7 +16,7 @@
 # limitations under the License.
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-. ./build.conf
+. ./build.env
 
 JAVA_VERSION=""
 OS_IMAGE=""

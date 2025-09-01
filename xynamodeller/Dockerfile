@@ -23,15 +23,17 @@ ENV XYNA_HOSTNAME="xyna"
 
 SHELL ["/bin/bash", "-c"]
 
-COPY modeller.war /tmp
 COPY apache2/ports.conf /etc/apache2
 COPY apache2/000-default.conf /etc/apache2/sites-available
 
-RUN apt -y update \
-    && apt-get -y install less zip unzip
+RUN apt --no-install-recommends -y update \
+    && apt-get -y install less zip unzip curl \
+    && rm -rf /var/lib/apt/lists/*
+
 
 RUN a2enmod proxy \
     && a2enmod proxy_http \
     && a2enmod rewrite
 
-RUN unzip /tmp/modeller.war -d /var/www/html/modeller
+RUN --mount=type=bind,source=modeller.war,target=/tmp/modeller.war \    
+    unzip /tmp/modeller.war -d /var/www/html/modeller

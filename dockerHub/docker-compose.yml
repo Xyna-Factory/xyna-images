@@ -105,6 +105,12 @@ services:
       # The value of XYNA_HOSTNAME must match the value of the xyna service
       - XYNA_HOSTNAME=xyna
       - APACHE_LOG_DIR=/var/log/apache2
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f https://127.0.0.1:$$MODELLER_PORT/modeller"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 5s
     ports:
     # see https://docs.docker.com/engine/network/#published-ports
       - ${MODELLER_PORT}:${MODELLER_PORT}

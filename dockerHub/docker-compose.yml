@@ -1,31 +1,48 @@
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Copyright 2025 Xyna GmbH, Germany
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 services:
    mariadb:
-    image: mariadb:11.8
+    image: ${MARIADB_IMAGE}
+    container_name: ${MARIADB_CONTAINER_NAME}
     # see https://docs.docker.com/reference/compose-file/services/#pull_policy
-    pull_policy: missing
+    pull_policy: ${MARIADB_PULL_POLICY}
     restart: unless-stopped
     environment:
-      - MYSQL_DATABASE=xyna
-      - MYSQL_USER=xyna
-      - MYSQL_ROOT_PASSWORD=db_root_pwd
-      - MYSQL_PASSWORD=xyna_db_pwd
+      - MARIADB_DATABASE=${MARIADB_DATABASE}
+      - MARIADB_USER=${MARIADB_USER}
+      - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
+      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
     expose:
-      - 3306
+      - ${MARIADB_PORT}
     healthcheck:
-      test: ["CMD-SHELL", "mariadb -u $$MYSQL_USER -p$$MYSQL_PASSWORD $$MYSQL_DATABASE -e 'select 1;'"]
+      test: ["CMD-SHELL", "mariadb -u $$MARIADB_USER -p$$MARIADB_PASSWORD $$MARIADB_DATABASE -e 'select 1;'"]
       interval: 5s
       timeout: 3s
       retries: 6
       start_period: 5s
-    
+
    xyna:
      # platform: linux/amd64 #Has to be set for Mac users
-    image: xynafactory/factory:latest
+    image: ${XYNA_IMAGE}
+    container_name: ${XYNA_CONTAINER_NAME}
     # see https://docs.docker.com/reference/compose-file/services/#pull_policy
-    pull_policy: missing
+    pull_policy: ${XYNA_PULL_POLICY}
     # SYNC_CONTAINER_LIFECYCLE_TO_FACTORY: set to false to keep the container running independently of the xynafactory process
     environment:
-      - SYNC_CONTAINER_LIFECYCLE_TO_FACTORY=true
+      - SYNC_CONTAINER_LIFECYCLE_TO_FACTORY=${SYNC_CONTAINER_LIFECYCLE_TO_FACTORY}
       - USERARCHIVE_XMLFILEPATH=defaultHISTORY/userarchive.xml
       - USERARCHIVE_MOUNTDIRECTORY=/userarchive
       - POOLDEFINITION_XMLFILEPATH=defaultHISTORY/pooldefinition.xml
@@ -40,12 +57,12 @@ services:
       - xyna-gen:/opt/xyna/xyna_001/server/gen
       - xyna-storage:/opt/xyna/xyna_001/server/storage
     configs:
-     - source: userarchive.$USERNAME.password
-       target: /userarchive/$USERNAME.password
-     - source: userarchive.$USERNAME.name
-       target: /userarchive/$USERNAME.name
-     - source: userarchive.$USERNAME.role
-       target: /userarchive/$USERNAME.role
+     - source: userarchive.XYNA.password
+       target: /userarchive/${XYNAUSER_USERNAME}.password
+     - source: userarchive.XYNA.name
+       target: /userarchive/${XYNAUSER_USERNAME}.name
+     - source: userarchive.XYNA.role
+       target: /userarchive/${XYNAUSER_USERNAME}.role
      - source: pooldefinition.password
        target: /pooldefinition/Xyna-Infra-Pool.password
      - source: pooldefinition.password
@@ -65,53 +82,61 @@ services:
     expose:
       - 4245
     healthcheck:
-      test: "echo -n $$'status\x1D\x1D\x04' | nc 127.0.0.1 4242 2>&1"
-      interval: 1s
+      test: ["CMD-SHELL", "/opt/xyna/xyna_001/server/xynafactory.sh status"]
+      interval: 5s
       timeout: 5s
       retries: 60
-      start_period: 180s
+      start_period: 10s
     depends_on:
       mariadb:
         condition: service_healthy
     ports:
+    # see https://docs.docker.com/engine/network/#published-ports
       - "8000-8010"
 
    modeller:
-    image: xynafactory/modeller:latest
+    image: ${MODELLER_IMAGE}
+    container_name: ${MODELLER_CONTAINER_NAME}
     # see https://docs.docker.com/reference/compose-file/services/#pull_policy
-    pull_policy: missing
+    pull_policy: ${MODELLER_PULL_POLICY}
     entrypoint: ["apachectl", "-D", "FOREGROUND"]
     environment:
-      - MODELLER_PORT=8000
+      - MODELLER_PORT=${MODELLER_PORT}
       # The value of XYNA_HOSTNAME must match the value of the xyna service
       - XYNA_HOSTNAME=xyna
       - APACHE_LOG_DIR=/var/log/apache2
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:$$MODELLER_PORT/modeller"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 5s
     ports:
-     # see https://docs.docker.com/engine/network/#published-ports
-      - 8000:8000
+    # see https://docs.docker.com/engine/network/#published-ports
+      - ${MODELLER_PORT}:${MODELLER_PORT}
     depends_on:
       - xyna
 
 # The values of the pooldefinition variables must match the values in the mariadb service
 configs:
-  userarchive.$USERNAME.name:
+  userarchive.XYNA.name:
     content: |
-      $USERNAME
-  userarchive.$USERNAME.password:
+      ${XYNAUSER_USERNAME}
+  userarchive.XYNA.password:
     content: |
-      $USERPASSWORD
-  userarchive.$USERNAME.role:
+      ${XYNAUSER_PASSWORD}
+  userarchive.XYNA.role:
     content: |
-      $USERROLE
+      ${XYNAUSER_ROLE}
   pooldefinition.password:
     content: |
-      xyna_db_pwd
+      ${MARIADB_PASSWORD}
   pooldefinition.user:
     content: |
-      xyna
+      ${MARIADB_USER}
   pooldefinition.connectstring:
     content: |
-      jdbc:mariadb://mariadb:3306/xyna
+      jdbc:mariadb://mariadb:${MARIADB_PORT}/${MARIADB_DATABASE}
   pooldefinition.type:
     content: |
       MySQL
@@ -125,4 +150,3 @@ volumes:
   xyna-xnwhclasses:
   xyna-gen:
   xyna-storage:
-

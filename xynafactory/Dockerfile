@@ -15,18 +15,29 @@
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # syntax=docker/dockerfile:1
-ARG XYNADEV_IMAGE=xynafactory/xynadev:latest
-FROM ${XYNADEV_IMAGE}
+ARG XYNABASE=xynafactory/xynabase:latest
+FROM ${XYNABASE}
 
-#Prepare Database Connector and Conector Pool
+# Init script
+COPY --chown=${XYNA_USER}:${XYNA_USER} init.sh /tmp/
+RUN chmod +x /tmp/init.sh  
+
+# Prepare Database Connector
 RUN  cd /tmp/XynaFactoryBundle/ \
   && ./prepare_db_connector_jars.sh 
 
-# set up persistence layer
+# Set up persistence layer, install applications
 ARG XYNAFACTORY_SH=/opt/xyna/xyna_001/server/xynafactory.sh
 ARG XMOMREPOSITORY=/opt/xyna/xyna_001/xmomrepository
+ARG INSTALL_BLACKEDITION=/tmp/XynaBlackEdition/install_black_edition.sh
 RUN <<-EOF
+/tmp/configlog.sh log_nonblock
 ${XYNAFACTORY_SH} start
+printf "0\n" |${INSTALL_BLACKEDITION} -x FileMgmt
+printf "0\n" |${INSTALL_BLACKEDITION} -x SNMPStatistics
+printf "0\n" |${INSTALL_BLACKEDITION} -x UserSessionMgmt
+printf "0\n" |${INSTALL_BLACKEDITION} -x GitIntegration
+${INSTALL_BLACKEDITION} -x ActiveMQ,BatchProcessMgmt,CSV,CapacityMgmt,Connection,Crypto,GuiHttp,Http,IOSDevice,IOSXEDevice,IOSXRDevice,Json,JunOSDevice,LDAP,Mail,Net,Node,OAS_Base,OneOSDevice,Queue,RegExp,SNMP,SOAP,SSH,SSHFile,SSHServer,SSHTools,ScriptExecutor,StorableOperations,Telnet,Timeseries,UserRoleManagement,XynaPropertyMgmt,YangAppGenerator,YangBase
 ${XYNAFACTORY_SH} addconnectionpool -connectstring jdbc:mariadb://placeholder/xyna -name Xyna-Infra-Pool -size 10 -type Mock_MySQL -user placeholder -password placeholder
 ${XYNAFACTORY_SH} instantiatepersistencelayer -persistenceLayerName mysql -department xyna -connectionType DEFAULT -persistenceLayerInstanceName Xyna-Infra-Default-Inst -persistenceLayerSpecifics Xyna-Infra-Pool 4000 zippedBlobs=true
 ${XYNAFACTORY_SH} instantiatepersistencelayer -persistenceLayerName mysql -department xyna -connectionType HISTORY -persistenceLayerInstanceName Xyna-Infra-History-Inst -persistenceLayerSpecifics Xyna-Infra-Pool 4000 zippedBlobs=true
@@ -41,15 +52,14 @@ ${XYNAFACTORY_SH} registertable -persistenceLayerInstanceName Xyna-Infra-Default
 ${XYNAFACTORY_SH} registertable -persistenceLayerInstanceName Xyna-Infra-History-Inst -tableName cronlikeorders
 ${XYNAFACTORY_SH} set xnwh.persistence.xmom.defaultpersistencelayerid $(${XYNAFACTORY_SH} listpersistencelayerinstances | grep Xyna-Infra-Default-Inst | awk '{ print $2 }')
 ${XYNAFACTORY_SH} set xnwh.persistence.xmom.defaulthistorypersistencelayerid $(${XYNAFACTORY_SH} listpersistencelayerinstances | grep Xyna-Infra-History-Inst | awk '{ print $2 }')
+${XYNAFACTORY_SH} set xyna.default.monitoringlevel 20
 ${XYNAFACTORY_SH} stop
+/tmp/configlog.sh stdout_nonblock
+find /opt/xyna/xyna_001/storage -name "*.journal" | xargs --no-run-if-empty rm
 /k8s/xyna/xmomrepository_adjust_revision.sh ${XMOMREPOSITORY}
 /k8s/xyna/xmomrepository_adjust_revision_history.sh ${XMOMREPOSITORY}
 EOF
 
-COPY --chown=${XYNA_USER}:${XYNA_USER} init.sh /tmp/
-
-RUN chmod +x /tmp/init.sh \
-  && rm -rf /opt/xyna/xyna_image   
 
 ENV SYNC_CONTAINER_LIFECYCLE_TO_FACTORY=true
 CMD /tmp/init.sh

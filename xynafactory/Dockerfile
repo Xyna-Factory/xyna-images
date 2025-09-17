@@ -53,6 +53,8 @@ ${XYNAFACTORY_SH} registertable -persistenceLayerInstanceName Xyna-Infra-History
 ${XYNAFACTORY_SH} set xnwh.persistence.xmom.defaultpersistencelayerid $(${XYNAFACTORY_SH} listpersistencelayerinstances | grep Xyna-Infra-Default-Inst | awk '{ print $2 }')
 ${XYNAFACTORY_SH} set xnwh.persistence.xmom.defaulthistorypersistencelayerid $(${XYNAFACTORY_SH} listpersistencelayerinstances | grep Xyna-Infra-History-Inst | awk '{ print $2 }')
 ${XYNAFACTORY_SH} set xyna.default.monitoringlevel 20
+${XYNAFACTORY_SH} set xmcp.guihttp.sts false
+${XYNAFACTORY_SH} set xmcp.guihttp.csrf false
 ${XYNAFACTORY_SH} stop
 /tmp/configlog.sh stdout_nonblock
 find /opt/xyna/xyna_001/storage -name "*.journal" | xargs --no-run-if-empty rm

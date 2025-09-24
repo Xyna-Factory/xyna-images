@@ -15,25 +15,18 @@
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # syntax=docker/dockerfile:1
-ARG APACHE2_IMAGE=ubuntu/apache2:latest
-FROM ${APACHE2_IMAGE}
-ENV APACHE_LOG_DIR=/var/log/apache2
+ARG HTTPD_IMAGE=httpd:latest
+FROM ${HTTPD_IMAGE}
 ENV MODELLER_PORT=8000
 ENV XYNA_HOSTNAME="xyna"
 
 SHELL ["/bin/bash", "-c"]
 
-COPY apache2/ports.conf /etc/apache2
-COPY apache2/000-default.conf /etc/apache2/sites-available
+COPY ./httpd.conf /usr/local/apache2/conf/httpd.conf
 
 RUN apt --no-install-recommends -y update \
     && apt-get -y install less zip unzip curl \
     && rm -rf /var/lib/apt/lists/*
 
-
-RUN a2enmod proxy \
-    && a2enmod proxy_http \
-    && a2enmod rewrite
-
 RUN --mount=type=bind,source=modeller.war,target=/tmp/modeller.war \    
-    unzip /tmp/modeller.war -d /var/www/html/modeller
+    unzip /tmp/modeller.war -d /usr/local/apache2/htdocs/modeller

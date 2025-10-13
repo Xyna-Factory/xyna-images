@@ -16,7 +16,8 @@
 
 # syntax=docker/dockerfile:1
 ARG OS_IMAGE=ubuntu:24.04
-FROM ${OS_IMAGE} AS xyna-install
+
+FROM ${OS_IMAGE} AS xyna-install-stage-1
 ARG OS_IMAGE
 ARG JAVA_VERSION
 
@@ -34,12 +35,9 @@ SHELL ["/bin/bash", "-c"]
 
 COPY os /tmp/os
 RUN ls -l /tmp/os
-RUN /tmp/os/install_os_packages.sh -o ${OS_IMAGE} -j ${JAVA_VERSION}
 
 RUN groupadd -g 4242 $XYNA_USER
 RUN useradd -m -u 4242 -g 4242 -s /bin/bash $XYNA_USER
-
-COPY --chown=${XYNA_USER}:${XYNA_USER} XynaFactory_v*.zip /tmp/
 
 ENV HOSTNAME=xynaContainer
 ENV PREREQ_INSTALL_PARAMS=${PREREQ_INSTALL_PARAMS:-"\n\n\n\n\n\n\n\n\nfalse\n\nchangeMe\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nxyna\n\n\n\n\n\n\n\n\nxyna\n\n\n\n\n\n"}
@@ -50,6 +48,34 @@ RUN mkdir /var/log/xyna \
     && chown -R ${XYNA_USER}:${XYNA_USER} /etc/opt/xyna/environment
 
 
+RUN apt --no-install-recommends -y update && \
+    apt -y upgrade && \
+    apt-get -y install zip unzip patch netcat-traditional dc curl gnupg && \
+    curl -s https://repos.azul.com/azul-repo.key | gpg --dearmor -o /usr/share/keyrings/azul.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/azul.gpg] https://repos.azul.com/zulu/deb stable main" | tee /etc/apt/sources.list.d/zulu.list && \
+    apt --no-install-recommends -y update && \
+    apt -y install zulu${JAVA_VERSION}-jdk-headless && \
+    apt-get -y purge curl gnupg && \
+    apt-get -y autoremove && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+
+#############################
+
+
+FROM xyna-install-stage-1 AS xyna-install-stage-2
+
+USER root
+COPY --chown=${XYNA_USER}:${XYNA_USER} XynaFactory_v*.zip /tmp/
+
+RUN apt --no-install-recommends -y update && \
+    apt -y upgrade && \
+    apt-get -y install wget xinetd net-tools bind9utils vim-tiny less libxml2-utils ca-certificates gcc python3-dev python3-venv python3-pip systemd uuid-runtime && \
+    apt-get -y autoremove && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 # python code snippets
 USER ${XYNA_USER}
 RUN python3 -m venv /etc/opt/xyna/environment/venv \
@@ -57,7 +83,8 @@ RUN python3 -m venv /etc/opt/xyna/environment/venv \
     && pip3 install --upgrade pip \
     && pip3 install jep \
     && pip3 uninstall -y setuptools \
-    && deactivate
+    && deactivate \
+    && rm -rf ~/.cache/pip
 
 USER root
 
@@ -82,6 +109,7 @@ RUN cd /tmp \
 
 RUN /tmp/os/adjust_blackedition_properties.sh -j ${JAVA_VERSION}
 
+
 RUN cd /tmp \
     && unzip XynaBlackEdition.zip \
     && rm XynaBlackEdition.zip \
@@ -101,16 +129,34 @@ RUN /tmp/XynaBlackEdition/install_black_edition.sh -v -b -c xynafactory -x Globa
     && rm -rf ${XYNA_PATH}/backup \
     && /tmp/os/set_venv_permission.sh
 
-
 USER root
+
 RUN /tmp/os/postprocess_os_packages.sh -o ${OS_IMAGE}
 
-COPY --chown=${XYNA_USER}:${XYNA_USER} k8s /k8s
-RUN chmod -R +x /k8s \
-    && rm -rf /tmp/XBE_Prerequisites_*.zip \
+RUN rm -rf /tmp/XBE_Prerequisites_*.zip \
     && rm -rf /tmp/XynaBlackEdition_v*.zip \
+    && rm -rf /tmp/XynaFactoryBundle/*.zip \
+    && rm -rf /tmp/XynaFactoryBundle/*.war \
+    && rm -rf /tmp/XynaBlackEdition/server/*.zip \
     && rm -rf /tmp/os
 
+
+#############################
+
+FROM xyna-install-stage-1 AS xyna-install-stage-3
+
+USER root
+
+COPY --from=xyna-install-stage-2 --chown=${XYNA_USER}:4242 /opt/xyna /opt/xyna
+COPY --from=xyna-install-stage-2 /etc/opt/xyna/var/ /etc/opt/xyna/var/
+COPY --from=xyna-install-stage-2 --chown=${XYNA_USER}:4242 /etc/opt/xyna/environment /etc/opt/xyna/environment
+COPY --from=xyna-install-stage-2 --chown=${XYNA_USER}:4242 /tmp/XynaBlackEdition /tmp/XynaBlackEdition
+COPY --from=xyna-install-stage-2 --chown=${XYNA_USER}:4242 /tmp/XynaFactoryBundle /tmp/XynaFactoryBundle
+COPY --from=xyna-install-stage-2 --chown=${XYNA_USER}:4242 /tmp/XBE_Prerequisites /tmp/XBE_Prerequisites
+
+
+COPY --chown=${XYNA_USER}:${XYNA_USER} k8s /k8s
+RUN chmod -R +x /k8s
 
 RUN ${XYNA_PATH}/server/xynafactory.sh start \
     && until ${XYNA_PATH}/server/xynafactory.sh -q status; do echo "########## $? waiting..."; sleep 10; done \

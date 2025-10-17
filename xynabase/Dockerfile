@@ -106,8 +106,6 @@ RUN /tmp/XynaBlackEdition/install_black_edition.sh -v -b -c xynafactory -x Globa
 
 USER root
 
-RUN /tmp/os/postprocess_os_packages.sh -o ${OS_IMAGE}
-
 RUN rm -rf /tmp/XBE_Prerequisites_*.zip \
     && rm -rf /tmp/XynaBlackEdition_v*.zip \
     && rm -rf /tmp/XynaFactoryBundle/*.zip \
@@ -118,9 +116,13 @@ RUN rm -rf /tmp/XBE_Prerequisites_*.zip \
 
 #############################
 
+
 FROM xyna-install-stage-1 AS xyna-install-stage-3
 
 USER root
+
+RUN /tmp/os/postprocess_os_packages.sh -o ${OS_IMAGE}
+
 
 COPY --from=xyna-install-stage-2 --chown=${XYNA_USER}:4242 /opt/xyna /opt/xyna
 COPY --from=xyna-install-stage-2 /etc/opt/xyna/var/ /etc/opt/xyna/var/

@@ -26,7 +26,7 @@ usage() {
 
 
 do_install() {
-    if [[ $1 -ne ${STAGE_NUM}; then
+    if [[ $1 -ne ${STAGE_NUM} ]]; then
         echo "No pip packages to install in installation stage ${STAGE_NUM} on ${OS_IMAGE}"
         exit 0
     fi

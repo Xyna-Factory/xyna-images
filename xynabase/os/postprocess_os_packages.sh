@@ -45,7 +45,8 @@ if [[ ${OS_IMAGE} == oraclelinux:* ]]; then
 elif [[ ${OS_IMAGE} == redhat/ubi*:* ]]; then
     pip3 uninstall -y setuptools
 elif [[ ${OS_IMAGE} == ubuntu:* ]]; then
-    apt-get -y remove python3-pip
+    #apt-get -y remove python3-pip
+    echo "No package removal needed for OS ${OS_IMAGE}"
 else
    echo "Warning: unsupported OS_IMAGE=${OS_IMAGE}"
 fi

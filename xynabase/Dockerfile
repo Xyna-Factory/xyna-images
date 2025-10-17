@@ -47,18 +47,8 @@ RUN mkdir /var/log/xyna \
     && mkdir -p /etc/opt/xyna/environment \
     && chown -R ${XYNA_USER}:${XYNA_USER} /etc/opt/xyna/environment
 
-
-RUN apt --no-install-recommends -y update && \
-    apt -y upgrade && \
-    apt-get -y install zip unzip patch netcat-traditional dc curl gnupg && \
-    curl -s https://repos.azul.com/azul-repo.key | gpg --dearmor -o /usr/share/keyrings/azul.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/azul.gpg] https://repos.azul.com/zulu/deb stable main" | tee /etc/apt/sources.list.d/zulu.list && \
-    apt --no-install-recommends -y update && \
-    apt -y install zulu${JAVA_VERSION}-jdk-headless && \
-    apt-get -y purge curl gnupg && \
-    apt-get -y autoremove && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+RUN /tmp/os/install_os_packages.sh -o ${OS_IMAGE} -j ${JAVA_VERSION} && \
+    /tmp/os/install_python_libs_for_stage.sh -o ${OS_IMAGE} -u ${XYNA_USER} -s 1
 
 
 #############################
@@ -69,24 +59,9 @@ FROM xyna-install-stage-1 AS xyna-install-stage-2
 USER root
 COPY --chown=${XYNA_USER}:${XYNA_USER} XynaFactory_v*.zip /tmp/
 
-RUN apt --no-install-recommends -y update && \
-    apt -y upgrade && \
-    apt-get -y install wget xinetd net-tools bind9utils vim-tiny less libxml2-utils ca-certificates gcc python3-dev python3-venv python3-pip systemd uuid-runtime && \
-    apt-get -y autoremove && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+RUN /tmp/os/install_os_packages_step2.sh -o ${OS_IMAGE} && \
+    /tmp/os/install_python_libs_for_stage.sh -o ${OS_IMAGE} -u ${XYNA_USER} -s 2
 
-# python code snippets
-USER ${XYNA_USER}
-RUN python3 -m venv /etc/opt/xyna/environment/venv \
-    && source /etc/opt/xyna/environment/venv/bin/activate \
-    && pip3 install --upgrade pip \
-    && pip3 install jep \
-    && pip3 uninstall -y setuptools \
-    && deactivate \
-    && rm -rf ~/.cache/pip
-
-USER root
 
 # install prerequisites
 # create files in /etc/opt/xyna/environment: xynaContainer.properties black_edition_001.properties and xynaContainer.component.properties

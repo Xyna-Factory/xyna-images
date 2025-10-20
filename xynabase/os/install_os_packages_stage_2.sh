@@ -46,7 +46,8 @@ elif [[ ${OS_IMAGE} == ubuntu:* ]]; then
     echo "Going to install additional packages"
     apt --no-install-recommends -y update
     apt -y upgrade
-    apt-get -y install wget xinetd net-tools bind9utils vim-tiny less libxml2-utils ca-certificates gcc python3-dev python3-venv python3-pip systemd uuid-runtime
+    #apt-get -y install wget xinetd net-tools bind9utils vim-tiny less libxml2-utils ca-certificates gcc python3-dev python3-venv python3-pip systemd uuid-runtime
+    apt-get -y install wget xinetd net-tools bind9utils vim-tiny less libxml2-utils ca-certificates gcc systemd uuid-runtime
     apt-get -y autoremove
     apt-get clean
     rm -rf /var/lib/apt/lists/*

@@ -17,6 +17,10 @@
 # syntax=docker/dockerfile:1
 ARG OS_IMAGE=ubuntu:24.04
 
+
+######################
+## stage 1: prepare components needed for the final image
+
 FROM ${OS_IMAGE} AS xyna-install-stage-1
 ARG OS_IMAGE
 ARG JAVA_VERSION
@@ -47,40 +51,45 @@ RUN mkdir /var/log/xyna \
     && mkdir -p /etc/opt/xyna/environment \
     && chown -R ${XYNA_USER}:${XYNA_USER} /etc/opt/xyna/environment
 
-RUN /tmp/os/install_os_packages.sh -o ${OS_IMAGE} -j ${JAVA_VERSION} && \
+RUN /tmp/os/install_os_packages_stage_1.sh -o ${OS_IMAGE} -j ${JAVA_VERSION} && \
     /tmp/os/install_python_libs_for_stage.sh -o ${OS_IMAGE} -u ${XYNA_USER} -s 1
 
 
 #############################
-
+## stage 2: prepare components that can be discarded in final image; install xyna
 
 FROM xyna-install-stage-1 AS xyna-install-stage-2
 
 USER root
 COPY --chown=${XYNA_USER}:${XYNA_USER} XynaFactory_v*.zip /tmp/
 
-RUN /tmp/os/install_os_packages_step2.sh -o ${OS_IMAGE} && \
+RUN /tmp/os/install_os_packages_stage_2.sh -o ${OS_IMAGE} && \
     /tmp/os/install_python_libs_for_stage.sh -o ${OS_IMAGE} -u ${XYNA_USER} -s 2
 
 
 # install prerequisites
 # create files in /etc/opt/xyna/environment: xynaContainer.properties black_edition_001.properties and xynaContainer.component.properties
-RUN cd /tmp \
-    #
-    && unzip XynaFactory* \
-    && rm XynaFactory*.zip \
-    && mv XynaFactory* XynaFactoryBundle \
-    && cp XynaFactoryBundle/XynaFactory_* XynaBlackEdition.zip \
-    && cp XynaFactoryBundle/XBE_Pre* XBE_Prerequisites.zip \
-    #
-    && unzip XBE_Prerequisites* \
-    && rm XBE_Prerequisites.zip \
-    && mv XBE_Prerequisites* XBE_Prerequisites \
-    && chown -R ${XYNA_USER}:${XYNA_USER} XBE_Prerequisites \
-    && chmod 777 XBE_Prerequisites/install_prerequisites.sh \
-    && source /etc/opt/xyna/environment/venv/bin/activate \
-    && printf $PREREQ_INSTALL_PARAMS | XBE_Prerequisites/install_prerequisites.sh -x \
-    && deactivate
+
+RUN /tmp/os/handle_prerequisites.sh -o ${OS_IMAGE} -u ${XYNA_USER}
+
+#RUN cd /tmp \
+#    #
+#    && unzip XynaFactory* \
+#    && rm XynaFactory*.zip \
+#    && mv XynaFactory* XynaFactoryBundle \
+#    && cp XynaFactoryBundle/XynaFactory_* XynaBlackEdition.zip \
+#    && cp XynaFactoryBundle/XBE_Pre* XBE_Prerequisites.zip \
+#    #
+#    && unzip XBE_Prerequisites* \
+#    && rm XBE_Prerequisites.zip \
+#    && mv XBE_Prerequisites* XBE_Prerequisites \
+#    && chown -R ${XYNA_USER}:${XYNA_USER} XBE_Prerequisites \
+#    && chmod 777 XBE_Prerequisites/install_prerequisites.sh \
+#    #&& source /etc/opt/xyna/environment/venv/bin/activate \
+#    #&& printf $PREREQ_INSTALL_PARAMS | XBE_Prerequisites/install_prerequisites.sh -x \
+#    #&& deactivate
+#    && printf $PREREQ_INSTALL_PARAMS | XBE_Prerequisites/install_prerequisites.sh -x
+
 
 RUN /tmp/os/adjust_blackedition_properties.sh -j ${JAVA_VERSION}
 
@@ -115,7 +124,7 @@ RUN rm -rf /tmp/XBE_Prerequisites_*.zip \
 
 
 #############################
-
+## stage 3: keep only the necessary results of xyna installation from stage 2; finish image
 
 FROM xyna-install-stage-1 AS xyna-install-stage-3
 

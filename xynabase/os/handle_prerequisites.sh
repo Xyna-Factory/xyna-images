@@ -17,32 +17,48 @@
 
 OS_IMAGE=""
 XYNA_USER=""
-STAGE_NUM=""
 
 usage() {
-    echo "Usage: $0 -o <OS-Image> -u <Xyna-User-Name> -s <Stage-Num>"
+    echo "Usage: $0 -o <OS-Image> -u <Xyna-User-Name>"
     exit 1
 }
 
 
-do_install() {
-    if [[ $1 -ne ${STAGE_NUM} ]]; then
-        echo "No pip packages to install in installation stage ${STAGE_NUM} on ${OS_IMAGE}"
-        exit 0
-    fi
-    su ${XYNA_USER}
-    echo "Going to install pip3 jep for python"
-    python3 -m venv /etc/opt/xyna/environment/venv
+install_full() {
+    cd /tmp
+    unzip XynaFactory*
+    rm XynaFactory*.zip
+    mv XynaFactory* XynaFactoryBundle
+    cp XynaFactoryBundle/XynaFactory_* XynaBlackEdition.zip
+    cp XynaFactoryBundle/XBE_Pre* XBE_Prerequisites.zip
+    unzip XBE_Prerequisites*
+    rm XBE_Prerequisites.zip
+    mv XBE_Prerequisites* XBE_Prerequisites
+    chown -R ${XYNA_USER}:${XYNA_USER} XBE_Prerequisites
+    chmod 777 XBE_Prerequisites/install_prerequisites.sh
     source /etc/opt/xyna/environment/venv/bin/activate
-    pip3 install --upgrade pip
-    pip3 install jep
-    pip3 uninstall -y setuptools
+    printf $PREREQ_INSTALL_PARAMS | XBE_Prerequisites/install_prerequisites.sh -x
     deactivate
-    rm -rf ~/.cache/pip
 }
 
 
-while getopts ":o:u:s:" option; do
+install_without_python() {
+    cd /tmp
+    unzip XynaFactory*
+    rm XynaFactory*.zip
+    mv XynaFactory* XynaFactoryBundle
+    cp XynaFactoryBundle/XynaFactory_* XynaBlackEdition.zip
+    cp XynaFactoryBundle/XBE_Pre* XBE_Prerequisites.zip
+    unzip XBE_Prerequisites*
+    rm XBE_Prerequisites.zip
+    mv XBE_Prerequisites* XBE_Prerequisites
+    chown -R ${XYNA_USER}:${XYNA_USER} XBE_Prerequisites
+    chmod 777 XBE_Prerequisites/install_prerequisites.sh
+    printf $PREREQ_INSTALL_PARAMS | XBE_Prerequisites/install_prerequisites.sh -x
+}
+
+
+while getopts ":o:u:" option; do
     case "${option}" in
         o)
             OS_IMAGE=${OPTARG}
@@ -50,14 +66,12 @@ while getopts ":o:u:s:" option; do
         u)
             XYNA_USER=${OPTARG}
             ;;
-        s)
-            STAGE_NUM=${OPTARG}
-            ;;
         *)
             usage
             ;;
     esac
 done
+
 
 if [[ -z ${OS_IMAGE} ]]; then
     usage
@@ -65,18 +79,14 @@ fi
 if [[ -z ${XYNA_USER} ]]; then
     usage
 fi
-if [[ -z ${STAGE_NUM} ]]; then
-    usage
-fi
 
 
 if [[ ${OS_IMAGE} == oraclelinux:* ]]; then
-    do_install 1
+    install_full
 elif [[ ${OS_IMAGE} == redhat/ubi*:* ]]; then
-    do_install 1
+    install_full
 elif [[ ${OS_IMAGE} == ubuntu:* ]]; then
-    #do_install 2
-    echo "Python installation not needed in xyna base image for ${OS_IMAGE}"
+    install_without_python
 else
    echo "Warning: unsupported OS_IMAGE=${OS_IMAGE}"
 fi

@@ -43,10 +43,14 @@ if [[ ${OS_IMAGE} == oraclelinux:* ]]; then
 elif [[ ${OS_IMAGE} == redhat/ubi*:* ]]; then
     echo "No additional package installation needed"
 elif [[ ${OS_IMAGE} == ubuntu:* ]]; then
-    echo "Going to install additional packages"
-    apt --no-install-recommends -y update
-    apt -y upgrade
-    apt-get -y install wget xinetd net-tools bind9utils vim-tiny less libxml2-utils gnupg ca-certificates curl gcc python3-dev python3-venv python3-pip systemd uuid-runtime
+    echo "Going to install pip3 jep for python"
+    python3 -m venv /etc/opt/xyna/environment/venv
+    source /etc/opt/xyna/environment/venv/bin/activate
+    pip3 install --upgrade pip
+    pip3 install jep
+    pip3 uninstall -y setuptools
+    deactivate
+    rm -rf ~/.cache/pip
 else
     echo "Warning: unsupported OS_IMAGE=${OS_IMAGE}"
 fi

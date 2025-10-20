@@ -21,12 +21,19 @@ FROM ${XYNABASE_IMAGE}
 
 ARG OS_IMAGE
 
-RUN su && mkdir -p /tmp/os && exit
-COPY os/*.sh /tmp/os
-RUN XYNA_USER=$(whoami) && su && ls -l /tmp/os && chmod ug+x /tmp/os/*.sh && ls -l /tmp/os && \
-    /tmp/os/install_os_packages.sh -o ${OS_IMAGE} -u ${XYNA_USER} && exit
+USER root
 
-#USER ${XYNA_USER}:4242
+RUN mkdir -p /tmp/os2
+COPY os/*.sh /tmp/os2
+RUN chmod ug+x /tmp/os2/*.sh && \
+    chown 4242:4242 /tmp/os2/install_python_packages.sh && \
+    ls -l /tmp/os2 && \
+    /tmp/os2/install_os_packages.sh -o ${OS_IMAGE}
+USER 4242:4242
+RUN /tmp/os2/install_python_packages.sh -o ${OS_IMAGE}
+USER root
+RUN /tmp/os2/postprocess_os_packages.sh -o ${OS_IMAGE}
+USER 4242:4242
 
 
 ARG HTTP_TRIGGER_INTERFACE_CHOICE="0\n"

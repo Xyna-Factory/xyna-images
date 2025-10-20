@@ -18,6 +18,12 @@
 ARG XYNABASE_IMAGE=xynabase:xynamain-imagemain-java11-ubuntu24.04
 FROM ${XYNABASE_IMAGE}
 
+
+COPY os /tmp/os
+RUN chmod ug+x /tmp/os/*.sh && ls -l /tmp/os && \
+    /tmp/os/install_os_packages.sh -o ${OS_IMAGE} -u ${XYNA_USER}
+
+
 ARG HTTP_TRIGGER_INTERFACE_CHOICE="0\n"
 
 COPY --chown=${XYNA_USER}:${XYNA_USER} GitIntegration*.app /tmp/

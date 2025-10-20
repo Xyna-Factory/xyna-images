@@ -30,7 +30,7 @@ RUN chmod ug+x /tmp/os2/*.sh && \
     ls -l /tmp/os2 && \
     /tmp/os2/install_os_packages.sh -o ${OS_IMAGE}
 USER 4242:4242
-RUN /tmp/os2/install_python_packages.sh -o ${OS_IMAGE}
+RUN whoami && /tmp/os2/install_python_packages.sh -o ${OS_IMAGE}
 USER root
 RUN /tmp/os2/postprocess_os_packages.sh -o ${OS_IMAGE}
 USER 4242:4242

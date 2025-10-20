@@ -75,8 +75,7 @@ if [[ ${OS_IMAGE} == oraclelinux:* ]]; then
 elif [[ ${OS_IMAGE} == redhat/ubi*:* ]]; then
     do_install 1
 elif [[ ${OS_IMAGE} == ubuntu:* ]]; then
-    #do_install 2
     echo "Python installation not needed in xyna base image for ${OS_IMAGE}"
 else
-   echo "Warning: unsupported OS_IMAGE=${OS_IMAGE}"
+    echo "Warning: unsupported OS_IMAGE=${OS_IMAGE}"
 fi

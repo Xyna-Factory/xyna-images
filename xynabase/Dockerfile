@@ -38,7 +38,7 @@ ENV PATH="$JAVA_HOME/bin:$PATH"
 SHELL ["/bin/bash", "-c"]
 
 COPY os /tmp/os
-RUN ls -l /tmp/os
+RUN chmod ug+x /tmp/os/*.sh && ls -l /tmp/os
 
 RUN groupadd -g 4242 $XYNA_USER
 RUN useradd -m -u 4242 -g 4242 -s /bin/bash $XYNA_USER
@@ -71,25 +71,6 @@ RUN /tmp/os/install_os_packages_stage_2.sh -o ${OS_IMAGE} && \
 # create files in /etc/opt/xyna/environment: xynaContainer.properties black_edition_001.properties and xynaContainer.component.properties
 
 RUN /tmp/os/handle_prerequisites.sh -o ${OS_IMAGE} -u ${XYNA_USER}
-
-#RUN cd /tmp \
-#    #
-#    && unzip XynaFactory* \
-#    && rm XynaFactory*.zip \
-#    && mv XynaFactory* XynaFactoryBundle \
-#    && cp XynaFactoryBundle/XynaFactory_* XynaBlackEdition.zip \
-#    && cp XynaFactoryBundle/XBE_Pre* XBE_Prerequisites.zip \
-#    #
-#    && unzip XBE_Prerequisites* \
-#    && rm XBE_Prerequisites.zip \
-#    && mv XBE_Prerequisites* XBE_Prerequisites \
-#    && chown -R ${XYNA_USER}:${XYNA_USER} XBE_Prerequisites \
-#    && chmod 777 XBE_Prerequisites/install_prerequisites.sh \
-#    #&& source /etc/opt/xyna/environment/venv/bin/activate \
-#    #&& printf $PREREQ_INSTALL_PARAMS | XBE_Prerequisites/install_prerequisites.sh -x \
-#    #&& deactivate
-#    && printf $PREREQ_INSTALL_PARAMS | XBE_Prerequisites/install_prerequisites.sh -x
-
 
 RUN /tmp/os/adjust_blackedition_properties.sh -j ${JAVA_VERSION}
 

@@ -18,11 +18,14 @@
 ARG XYNABASE_IMAGE=xynabase:xynamain-imagemain-java11-ubuntu24.04
 FROM ${XYNABASE_IMAGE}
 
+USER root
 
 RUN mkdir -p /tmp/os
 COPY os/*.sh /tmp/os
 RUN whoami && ls -l /tmp/os && chmod ug+x /tmp/os/*.sh && ls -l /tmp/os && \
     /tmp/os/install_os_packages.sh -o ${OS_IMAGE} -u ${XYNA_USER}
+
+USER ${XYNA_USER}:4242
 
 
 ARG HTTP_TRIGGER_INTERFACE_CHOICE="0\n"

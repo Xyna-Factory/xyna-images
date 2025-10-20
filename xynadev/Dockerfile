@@ -21,7 +21,7 @@ FROM ${XYNABASE_IMAGE}
 
 RUN mkdir -p /tmp/os
 COPY os/*.sh /tmp/os
-RUN ls -l /tmp/os && chmod ug+x /tmp/os/*.sh && ls -l /tmp/os && \
+RUN whoami && ls -l /tmp/os && chmod ug+x /tmp/os/*.sh && ls -l /tmp/os && \
     /tmp/os/install_os_packages.sh -o ${OS_IMAGE} -u ${XYNA_USER}
 
 

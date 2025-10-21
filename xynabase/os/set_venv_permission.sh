@@ -19,4 +19,7 @@ set -e
 
 JEPLINE=$(grep "jep.module.path=" /etc/opt/xyna/environment/black_edition_001.properties)
 JEP_PATH=${JEPLINE#*=}
+if [[ -z ${JEP_PATH//[[:blank:]]/} ]]; then
+  exit 0
+fi
 sed -i "s#//permission java.lang.RuntimePermission \"loadLibrary.TOKEN_PATH_TO_LIB\";#permission java.lang.RuntimePermission \"loadLibrary.${JEP_PATH}\";#" ${XYNA_PATH}/server/server.policy

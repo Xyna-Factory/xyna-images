@@ -21,19 +21,25 @@ FROM ${XYNABASE_IMAGE}
 
 ARG OS_IMAGE
 
+#RUN echo "old vars: ${XYNA_USER} : ${OS_IMAGE} : ${XYNA_PATH}"
+RUN cat ${XYNA_PATH}/server/server.policy
+
 USER root
 
 RUN mkdir -p /tmp/os2
 COPY os/*.sh /tmp/os2
 RUN chmod ug+x /tmp/os2/*.sh && \
-    chown 4242:4242 /tmp/os2/install_python_packages.sh && \
     ls -l /tmp/os2 && \
-    /tmp/os2/install_os_packages.sh -o ${OS_IMAGE}
-USER 4242:4242
-RUN whoami && /tmp/os2/install_python_packages.sh -o ${OS_IMAGE}
-USER root
-RUN /tmp/os2/postprocess_os_packages.sh -o ${OS_IMAGE}
-USER 4242:4242
+    /tmp/os2/install_os_packages.sh -o ${OS_IMAGE} -u ${XYNA_USER} -p ${XYNA_PATH}
+
+    #chown 4242:4242 /tmp/os2/install_python_packages.sh && \
+
+#USER ${XYNA_USER}:4242
+#RUN /tmp/os2/install_python_packages.sh -o ${OS_IMAGE}
+#USER root
+#RUN /tmp/os2/postprocess_os_packages.sh -o ${OS_IMAGE}
+
+USER ${XYNA_USER}:4242
 
 
 ARG HTTP_TRIGGER_INTERFACE_CHOICE="0\n"
@@ -56,6 +62,7 @@ RUN ${XYNA_PATH}/server/xynafactory.sh start \
 # prepare revisions, server and xmomrepository folder - mount persistent volume on ${XYNA_PATH}
 RUN cp -r ${XYNA_PATH} ${XYNA_PATH}/../xyna_image
 
+RUN cat ${XYNA_PATH}/server/server.policy
 
 USER 4242:4242
 ENV HOSTNAME=xynaContainer

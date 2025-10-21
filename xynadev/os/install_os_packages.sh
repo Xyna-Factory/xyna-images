@@ -68,8 +68,6 @@ EOF
 
 
 adapt_env_props() {
-  cp /etc/opt/xyna/environment/black_edition_001.properties /etc/opt/xyna/environment/black_edition_001.properties.old
-
   awk '-F=' -v "newpath=${JEP_PATH}" "${AWK_SRC}" /etc/opt/xyna/environment/black_edition_001.properties > /tmp/tmp.env.props
   mv /tmp/tmp.env.props /etc/opt/xyna/environment/black_edition_001.properties
 }

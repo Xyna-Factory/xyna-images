@@ -21,7 +21,6 @@ FROM ${XYNABASE_IMAGE}
 
 ARG OS_IMAGE
 
-#RUN echo "old vars: ${XYNA_USER} : ${OS_IMAGE} : ${XYNA_PATH}"
 RUN cat ${XYNA_PATH}/server/server.policy
 
 USER root
@@ -32,12 +31,6 @@ RUN chmod ug+x /tmp/os2/*.sh && \
     ls -l /tmp/os2 && \
     /tmp/os2/install_os_packages.sh -o ${OS_IMAGE} -u ${XYNA_USER} -p ${XYNA_PATH}
 
-    #chown 4242:4242 /tmp/os2/install_python_packages.sh && \
-
-#USER ${XYNA_USER}:4242
-#RUN /tmp/os2/install_python_packages.sh -o ${OS_IMAGE}
-#USER root
-#RUN /tmp/os2/postprocess_os_packages.sh -o ${OS_IMAGE}
 
 USER ${XYNA_USER}:4242
 

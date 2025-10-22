@@ -57,18 +57,18 @@ fi
 ### awk block begin
 read -r -d '' AWK_SRC <<'EOF'
 {
-  if ($1 == "jep.module.path") { printf "%s=%s\n", $1, newpath; count++ }
+  if ($1 == propname) { printf "%s=%s\n", propname, propval; count++ }
   else { print }
 }
 END {
-  if (count == 0) { printf "jep.module.path=%s\n", newpath }
+  if (count == 0) { printf "%s=%s\n", propname, propval }
 }
 EOF
 ### awk block end
 
 
 adapt_env_props() {
-  awk '-F=' -v "newpath=${JEP_PATH}" "${AWK_SRC}" /etc/opt/xyna/environment/black_edition_001.properties > /tmp/tmp.env.props
+  awk '-F=' -v "propname=$1" -v "propval=$2" "${AWK_SRC}" /etc/opt/xyna/environment/black_edition_001.properties > /tmp/tmp.env.props
   mv /tmp/tmp.env.props /etc/opt/xyna/environment/black_edition_001.properties
 }
 
@@ -95,7 +95,8 @@ elif [[ ${OS_IMAGE} == ubuntu:* ]]; then
     rm -rf ~/.cache/pip
     JEP_PATH=$( find "${VENV_PATH}" -name 'libjep.so' )
     sed -i "s#//permission java.lang.RuntimePermission \"loadLibrary.TOKEN_PATH_TO_LIB\";#permission java.lang.RuntimePermission \"loadLibrary.${JEP_PATH}\";#" ${XYNA_PATH}/server/server.policy
-    adapt_env_props
+    adapt_env_props "jep.module.path" "${JEP_PATH}"
+    adapt_env_props "python.venv.path" "${VENV_PATH}"
     exit
 
     apt-get -y remove python3-pip

@@ -55,8 +55,6 @@ RUN ${XYNA_PATH}/server/xynafactory.sh start \
 # prepare revisions, server and xmomrepository folder - mount persistent volume on ${XYNA_PATH}
 RUN cp -r ${XYNA_PATH} ${XYNA_PATH}/../xyna_image
 
-#RUN cat ${XYNA_PATH}/server/server.policy && cat /etc/opt/xyna/environment/black_edition_001.properties
-
 USER 4242:4242
 ENV HOSTNAME=xynaContainer
 CMD ["/k8s/xyna/factory.sh"]

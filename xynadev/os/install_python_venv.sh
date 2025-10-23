@@ -15,6 +15,36 @@
 # limitations under the License.
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+OS_IMAGE=""
+XYNA_PATH=""
+
+usage() {
+    echo "Usage: $0 -o <OS-Image> -p <Xyna-Path>"
+    exit 1
+}
+
+
+while getopts ":o:p:" option; do
+    case "${option}" in
+        o)
+            OS_IMAGE=${OPTARG}
+            ;;
+        p)
+            XYNA_PATH=${OPTARG}
+            ;;
+        *)
+            usage
+            ;;
+    esac
+done
+
+if [[ -z ${OS_IMAGE} ]]; then
+    usage
+fi
+if [[ -z ${XYNA_PATH} ]]; then
+    usage
+fi
+
 
 BLACK_ED_ETC_PROP_FILE_PATH="/etc/opt/xyna/environment/black_edition_001.properties"
 _VENV_PATH="/etc/opt/xyna/environment/venv"
@@ -44,28 +74,14 @@ adapt_env_property() {
 }
 
 
-ubuntu_prepare_apt_install() {
-  apt --no-install-recommends -y update
-  apt -y upgrade
-}
-
-
-ubuntu_finish_apt_install() {
-  apt-get -y autoremove
-  apt-get clean
-  rm -rf /var/lib/apt/lists/*
-}
-
-
 ## parameters: xyna-user, xyna-path
 ubuntu_install_python_venv() {
-  if [[ $# -ne 2 ]]; then
+  if [[ $# -ne 1 ]]; then
     echo "ubuntu_install_python_venv(): Wrong number of parameters."
     exit 99
   fi
-  _XYNA_USER=$1
-  _XYNA_PATH=$2
-  su ${_XYNA_USER}
+  _XYNA_PATH=$1
+  echo "Going to install local venv for python"
   python3 -m venv "${_VENV_PATH}"
   source "${_VENV_PATH}/bin/activate"
   pip3 install --upgrade pip
@@ -74,9 +90,26 @@ ubuntu_install_python_venv() {
   deactivate
   rm -rf ~/.cache/pip
   _JEP_PATH=$( find "${_VENV_PATH}" -name 'libjep.so' )
+  cat "${_XYNA_PATH}/server/server.policy"
+  cat "$BLACK_ED_ETC_PROP_FILE_PATH"
+  ls -lat "$BLACK_ED_ETC_PROP_FILE_PATH"
+  ls -lat "$_VENV_PATH"
   sed -i "s#//permission java.lang.RuntimePermission \"loadLibrary.TOKEN_PATH_TO_LIB\";#permission java.lang.RuntimePermission \"loadLibrary.${_JEP_PATH}\";#" ${_XYNA_PATH}/server/server.policy
   adapt_env_property "jep.module.path" "${_JEP_PATH}"
   adapt_env_property "python.venv.path" "${_VENV_PATH}"
-  exit
+  cat "${_XYNA_PATH}/server/server.policy"
+  cat "$BLACK_ED_ETC_PROP_FILE_PATH"
+  ls -lat "$BLACK_ED_ETC_PROP_FILE_PATH"
+  ls -lat "$_VENV_PATH"
 }
 
+
+if [[ ${OS_IMAGE} == oraclelinux:* ]]; then
+    echo "No additional package installation needed"
+elif [[ ${OS_IMAGE} == redhat/ubi*:* ]]; then
+    echo "No additional package installation needed"
+elif [[ ${OS_IMAGE} == ubuntu:* ]]; then
+    ubuntu_install_python_venv ${XYNA_PATH}
+else
+    echo "Warning: unsupported OS_IMAGE=${OS_IMAGE}"
+fi

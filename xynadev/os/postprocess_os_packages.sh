@@ -43,10 +43,10 @@ if [[ ${OS_IMAGE} == oraclelinux:* ]]; then
 elif [[ ${OS_IMAGE} == redhat/ubi*:* ]]; then
     echo "No additional package installation needed"
 elif [[ ${OS_IMAGE} == ubuntu:* ]]; then
-    apt --no-install-recommends -y update
-    apt -y upgrade
-    apt-get -y install wget xinetd net-tools bind9utils vim-tiny less libxml2-utils gnupg ca-certificates curl gcc systemd uuid-runtime
-    apt-get -y install python3-dev python3-venv python3-pip
+    apt-get -y remove python3-pip
+    apt-get -y autoremove
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
 else
     echo "Warning: unsupported OS_IMAGE=${OS_IMAGE}"
 fi

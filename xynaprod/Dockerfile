@@ -18,6 +18,24 @@
 ARG XYNABASE_IMAGE=xynabase:xynamain-imagemain-java11-ubuntu24.04
 FROM ${XYNABASE_IMAGE}
 
+ARG OS_IMAGE
+
+USER root
+
+RUN mkdir -p /tmp/os2
+COPY os/*.sh /tmp/os2
+
+RUN chmod ug+x /tmp/os2/*.sh && \
+    chown ${XYNA_USER}:4242 /tmp/os2/install_python_venv.sh && \
+    ls -l /tmp/os2 && \
+    /tmp/os2/install_os_packages.sh -o ${OS_IMAGE}
+USER ${XYNA_USER}:4242
+RUN /tmp/os2/install_python_venv.sh -o ${OS_IMAGE} -p ${XYNA_PATH}
+USER root
+RUN /tmp/os2/postprocess_os_packages.sh -o ${OS_IMAGE}
+
+USER ${XYNA_USER}:4242
+
 # configure pid file location
 RUN mkdir ${XYNA_PATH}/tmp \
     && sed -i 's/pid\.folder=.*/pid.folder=\/tmp/' /etc/opt/xyna/environment/black_edition_001.properties \

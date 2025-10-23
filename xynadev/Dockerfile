@@ -21,8 +21,6 @@ FROM ${XYNABASE_IMAGE}
 
 ARG OS_IMAGE
 
-RUN cat ${XYNA_PATH}/server/server.policy
-
 USER root
 
 RUN mkdir -p /tmp/os2
@@ -31,14 +29,11 @@ RUN chmod ug+x /tmp/os2/*.sh && \
     ls -l /tmp/os2 && \
     /tmp/os2/install_os_packages.sh -o ${OS_IMAGE} -u ${XYNA_USER} -p ${XYNA_PATH}
 
-
 USER ${XYNA_USER}:4242
-
 
 ARG HTTP_TRIGGER_INTERFACE_CHOICE="0\n"
 
 COPY --chown=${XYNA_USER}:${XYNA_USER} GitIntegration*.app /tmp/
-
 
 RUN mkdir ${XYNA_PATH}/tmp \
     && sed -i 's/pid\.folder=.*/pid.folder=\/tmp/' /etc/opt/xyna/environment/black_edition_001.properties
@@ -55,7 +50,7 @@ RUN ${XYNA_PATH}/server/xynafactory.sh start \
 # prepare revisions, server and xmomrepository folder - mount persistent volume on ${XYNA_PATH}
 RUN cp -r ${XYNA_PATH} ${XYNA_PATH}/../xyna_image
 
-RUN cat ${XYNA_PATH}/server/server.policy
+RUN cat ${XYNA_PATH}/server/server.policy && cat /etc/opt/xyna/environment/black_edition_001.properties
 
 USER 4242:4242
 ENV HOSTNAME=xynaContainer

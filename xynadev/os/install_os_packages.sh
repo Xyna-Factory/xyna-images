@@ -24,6 +24,8 @@ usage() {
     exit 1
 }
 
+HERE=$(dirname "$0")
+source "${HERE}"/func_lib_images.sh
 
 
 while getopts ":o:u:p:" option; do
@@ -54,55 +56,20 @@ if [[ -z ${XYNA_PATH} ]]; then
 fi
 
 
-### awk block begin
-read -r -d '' AWK_SRC <<'EOF'
-{
-  if ($1 == propname) { printf "%s=%s\n", propname, propval; count++ }
-  else { print }
-}
-END {
-  if (count == 0) { printf "%s=%s\n", propname, propval }
-}
-EOF
-### awk block end
-
-
-adapt_env_props() {
-  awk '-F=' -v "propname=$1" -v "propval=$2" "${AWK_SRC}" /etc/opt/xyna/environment/black_edition_001.properties > /tmp/tmp.env.props
-  mv /tmp/tmp.env.props /etc/opt/xyna/environment/black_edition_001.properties
-}
-
-
 if [[ ${OS_IMAGE} == oraclelinux:* ]]; then
     echo "No additional package installation needed"
 elif [[ ${OS_IMAGE} == redhat/ubi*:* ]]; then
     echo "No additional package installation needed"
 elif [[ ${OS_IMAGE} == ubuntu:* ]]; then
+    ubuntu_prepare_apt_install
     echo "Going to install additional packages"
-    apt --no-install-recommends -y update
-    apt -y upgrade
-    apt-get -y install wget xinetd net-tools bind9utils vim-tiny less libxml2-utils gnupg ca-certificates curl gcc python3-dev python3-venv python3-pip systemd uuid-runtime
 
-    su ${XYNA_USER}
-    echo "Going to install pip3 jep for python"
-    VENV_PATH="/etc/opt/xyna/environment/venv"
-    python3 -m venv "${VENV_PATH}"
-    source "${VENV_PATH}/bin/activate"
-    pip3 install --upgrade pip
-    pip3 install jep
-    pip3 uninstall -y setuptools
-    deactivate
-    rm -rf ~/.cache/pip
-    JEP_PATH=$( find "${VENV_PATH}" -name 'libjep.so' )
-    sed -i "s#//permission java.lang.RuntimePermission \"loadLibrary.TOKEN_PATH_TO_LIB\";#permission java.lang.RuntimePermission \"loadLibrary.${JEP_PATH}\";#" ${XYNA_PATH}/server/server.policy
-    adapt_env_props "jep.module.path" "${JEP_PATH}"
-    adapt_env_props "python.venv.path" "${VENV_PATH}"
-    exit
+    apt-get -y install wget xinetd net-tools bind9utils vim-tiny less libxml2-utils gnupg ca-certificates curl gcc systemd uuid-runtime
+    apt-get -y install python3-dev python3-venv python3-pip
 
-    apt-get -y remove python3-pip
-    apt-get -y autoremove
-    apt-get clean
-    rm -rf /var/lib/apt/lists/*
+    echo "Going to install local venv for python"
+    ubuntu_install_python_venv "${XYNA_USER}" "${XYNA_PATH}"
+    ubuntu_finish_apt_install
 else
     echo "Warning: unsupported OS_IMAGE=${OS_IMAGE}"
 fi

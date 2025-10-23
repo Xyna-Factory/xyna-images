@@ -18,6 +18,23 @@
 ARG XYNABASE=xynafactory/xynabase:latest
 FROM ${XYNABASE}
 
+ARG OS_IMAGE
+
+USER root
+
+RUN mkdir -p /tmp/os2
+COPY os/*.sh /tmp/os2
+RUN chmod ug+x /tmp/os2/*.sh && \
+    chown ${XYNA_USER}:4242 /tmp/os2/install_python_venv.sh && \
+    ls -l /tmp/os2 && \
+    /tmp/os2/install_os_packages.sh -o ${OS_IMAGE}
+USER ${XYNA_USER}:4242
+RUN /tmp/os2/install_python_venv.sh -o ${OS_IMAGE} -p ${XYNA_PATH}
+USER root
+RUN /tmp/os2/postprocess_os_packages.sh -o ${OS_IMAGE}
+
+USER ${XYNA_USER}:4242
+
 # Init script
 COPY --chown=${XYNA_USER}:${XYNA_USER} init.sh /tmp/
 RUN chmod +x /tmp/init.sh  
@@ -61,6 +78,8 @@ find /opt/xyna/xyna_001/storage -name "*.journal" | xargs --no-run-if-empty rm
 /k8s/xyna/xmomrepository_adjust_revision.sh ${XMOMREPOSITORY}
 /k8s/xyna/xmomrepository_adjust_revision_history.sh ${XMOMREPOSITORY}
 EOF
+
+RUN cat ${XYNA_PATH}/server/server.policy && cat /etc/opt/xyna/environment/black_edition_001.properties
 
 
 ENV SYNC_CONTAINER_LIFECYCLE_TO_FACTORY=true

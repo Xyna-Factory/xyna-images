@@ -81,8 +81,5 @@ EOF
 
 RUN cat ${XYNA_PATH}/server/server.policy && cat /etc/opt/xyna/environment/black_edition_001.properties
 
-## avoid timestamp collision of log file
-RUN sleep 2s
-
 ENV SYNC_CONTAINER_LIFECYCLE_TO_FACTORY=true
 CMD /tmp/init.sh

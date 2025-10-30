@@ -69,6 +69,7 @@ ${XYNAFACTORY_SH} registertable -persistenceLayerInstanceName Xyna-Infra-Default
 ${XYNAFACTORY_SH} registertable -persistenceLayerInstanceName Xyna-Infra-History-Inst -tableName cronlikeorders
 ${XYNAFACTORY_SH} set xnwh.persistence.xmom.defaultpersistencelayerid $(${XYNAFACTORY_SH} listpersistencelayerinstances | grep Xyna-Infra-Default-Inst | awk '{ print $2 }')
 ${XYNAFACTORY_SH} set xnwh.persistence.xmom.defaulthistorypersistencelayerid $(${XYNAFACTORY_SH} listpersistencelayerinstances | grep Xyna-Infra-History-Inst | awk '{ print $2 }')
+${XYNAFACTORY_SH} registertable -persistenceLayerInstanceName xml_14 -tableName idgeneration
 ${XYNAFACTORY_SH} set xyna.default.monitoringlevel 20
 ${XYNAFACTORY_SH} set xmcp.guihttp.sts false
 ${XYNAFACTORY_SH} set xmcp.guihttp.csrf false

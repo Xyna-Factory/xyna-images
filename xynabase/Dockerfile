@@ -107,9 +107,6 @@ FROM xyna-install-stage-1 AS xyna-install-stage-3
 
 USER root
 
-RUN /tmp/os/postprocess_os_packages.sh -o ${OS_IMAGE}
-
-
 COPY --from=xyna-install-stage-2 --chown=${XYNA_USER}:4242 /opt/xyna /opt/xyna
 COPY --from=xyna-install-stage-2 /etc/opt/xyna/var/ /etc/opt/xyna/var/
 COPY --from=xyna-install-stage-2 --chown=${XYNA_USER}:4242 /etc/opt/xyna/environment /etc/opt/xyna/environment

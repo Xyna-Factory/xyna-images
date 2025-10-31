@@ -15,6 +15,8 @@
 # limitations under the License.
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+### install packages not yet present in xynabase-image
+
 OS_IMAGE=""
 
 usage() {
@@ -39,17 +41,13 @@ fi
 
 
 if [[ ${OS_IMAGE} == oraclelinux:* ]]; then
-    yum -y update
-    yum -y upgrade
-    yum install -y python3-devel
-    yum clean all
+    echo "No additional packages needed"
 elif [[ ${OS_IMAGE} == redhat/ubi*:* ]]; then
-    dnf install -y python3-devel
+    echo "No additional packages needed"
 elif [[ ${OS_IMAGE} == ubuntu:* ]]; then
     apt --no-install-recommends -y update
     apt -y upgrade
     apt-get -y install wget xinetd net-tools bind9utils vim-tiny less libxml2-utils gnupg ca-certificates curl gcc systemd uuid-runtime
-    apt-get -y install python3-dev python3-venv python3-pip
 else
     echo "Warning: unsupported OS_IMAGE=${OS_IMAGE}"
 fi

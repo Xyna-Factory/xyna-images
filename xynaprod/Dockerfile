@@ -28,7 +28,7 @@ COPY os/*.sh /tmp/os2
 RUN chmod ug+x /tmp/os2/*.sh && \
     chown ${XYNA_USER}:4242 /tmp/os2/install_python_venv.sh && \
     ls -l /tmp/os2 && \
-    /tmp/os2/install_os_packages.sh -o ${OS_IMAGE}
+    /tmp/os2/install_additional_pkgs_no_python.sh -o ${OS_IMAGE}
 USER ${XYNA_USER}:4242
 RUN /tmp/os2/install_python_venv.sh -o ${OS_IMAGE} -p ${XYNA_PATH}
 USER root

@@ -39,9 +39,12 @@ fi
 
 
 if [[ ${OS_IMAGE} == oraclelinux:* ]]; then
-    echo "No additional package installation needed"
+    yum -y update
+    yum -y upgrade
+    yum install -y python3-devel
+    yum clean all
 elif [[ ${OS_IMAGE} == redhat/ubi*:* ]]; then
-    echo "No additional package installation needed"
+    dnf install -y python3-devel
 elif [[ ${OS_IMAGE} == ubuntu:* ]]; then
     apt --no-install-recommends -y update
     apt -y upgrade

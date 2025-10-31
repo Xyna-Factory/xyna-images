@@ -75,7 +75,7 @@ adapt_env_property() {
 
 
 ## parameters: xyna-user, xyna-path
-ubuntu_install_python_venv() {
+do_install_python_venv() {
   if [[ $# -ne 1 ]]; then
     echo "ubuntu_install_python_venv(): Wrong number of parameters."
     exit 99
@@ -105,11 +105,11 @@ ubuntu_install_python_venv() {
 
 
 if [[ ${OS_IMAGE} == oraclelinux:* ]]; then
-    echo "No additional package installation needed"
+    do_install_python_venv ${XYNA_PATH}
 elif [[ ${OS_IMAGE} == redhat/ubi*:* ]]; then
-    echo "No additional package installation needed"
+    do_install_python_venv ${XYNA_PATH}
 elif [[ ${OS_IMAGE} == ubuntu:* ]]; then
-    ubuntu_install_python_venv ${XYNA_PATH}
+    do_install_python_venv ${XYNA_PATH}
 else
     echo "Warning: unsupported OS_IMAGE=${OS_IMAGE}"
 fi

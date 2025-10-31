@@ -82,9 +82,9 @@ fi
 
 
 if [[ ${OS_IMAGE} == oraclelinux:* ]]; then
-    install_full
+    install_without_python
 elif [[ ${OS_IMAGE} == redhat/ubi*:* ]]; then
-    install_full
+    install_without_python
 elif [[ ${OS_IMAGE} == ubuntu:* ]]; then
     install_without_python
 else

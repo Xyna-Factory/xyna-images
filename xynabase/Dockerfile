@@ -63,15 +63,12 @@ FROM xyna-install-stage-1 AS xyna-install-stage-2
 USER root
 COPY --chown=${XYNA_USER}:${XYNA_USER} XynaFactory_v*.zip /tmp/
 
-RUN /tmp/os/install_os_packages_stage_2.sh -o ${OS_IMAGE} && \
-    /tmp/os/install_python_libs_for_stage.sh -o ${OS_IMAGE} -u ${XYNA_USER} -s 2
+RUN /tmp/os/install_os_packages_stage_2.sh -o ${OS_IMAGE}
 
 
 # install prerequisites
 # create files in /etc/opt/xyna/environment: xynaContainer.properties black_edition_001.properties and xynaContainer.component.properties
-
 RUN /tmp/os/handle_prerequisites.sh -o ${OS_IMAGE} -u ${XYNA_USER}
-
 RUN /tmp/os/adjust_blackedition_properties.sh -j ${JAVA_VERSION}
 
 
@@ -91,8 +88,7 @@ USER ${XYNA_USER}:4242
 ENV HOSTNAME=xynaContainer
 RUN /tmp/XynaBlackEdition/install_black_edition.sh -v -b -c xynafactory -x GlobalApplicationMgmt \
     && ${XYNA_PATH}/server/xynafactory.sh stop \
-    && rm -rf ${XYNA_PATH}/backup \
-    && /tmp/os/set_venv_permission.sh
+    && rm -rf ${XYNA_PATH}/backup
 
 USER root
 

@@ -45,6 +45,7 @@ if [[ ${OS_IMAGE} == oraclelinux:* ]]; then
 elif [[ ${OS_IMAGE} == redhat/ubi*:* ]]; then
     echo "No additional packages needed"
 elif [[ ${OS_IMAGE} == ubuntu:* ]]; then
+    echo "Going to install additional packages (no python)"
     apt --no-install-recommends -y update
     apt -y upgrade
     apt-get -y install wget xinetd net-tools bind9utils vim-tiny less libxml2-utils gnupg ca-certificates curl gcc systemd uuid-runtime

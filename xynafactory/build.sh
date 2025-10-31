@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Copyright 2025 Xyna GmbH, Germany
 #
@@ -15,17 +16,30 @@
 # limitations under the License.
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+HERE=$(dirname "$0")
+cd "${HERE}"
+HERE=$(pwd)
+
+
 OS_IMAGE=""
+BASE_IMAGE=""
+NEW_IMAGE=""
 
 usage() {
-    echo "Usage: $0 -o <OS-Image>"
+    echo "Usage: $0 -o <OS-IMAGE> -b <BASE-IMAGE> -n <NEW-IMAGE>"
     exit 1
 }
 
-while getopts ":o:" option; do
+while getopts ":b:n:o:" option; do
     case "${option}" in
         o)
             OS_IMAGE=${OPTARG}
+            ;;
+        b)
+            BASE_IMAGE=${OPTARG}
+            ;;
+        n)
+            NEW_IMAGE=${OPTARG}
             ;;
         *)
             usage
@@ -33,20 +47,20 @@ while getopts ":o:" option; do
     esac
 done
 
+if [[ -z ${BASE_IMAGE} ]]; then
+    usage
+fi
 if [[ -z ${OS_IMAGE} ]]; then
     usage
 fi
-
-
-if [[ ${OS_IMAGE} == oraclelinux:* ]]; then
-    echo "No additional package installation needed"
-elif [[ ${OS_IMAGE} == redhat/ubi*:* ]]; then
-    echo "No additional package installation needed"
-elif [[ ${OS_IMAGE} == ubuntu:* ]]; then
-    apt-get -y remove python3-pip
-    apt-get -y autoremove
-    apt-get clean
-    rm -rf /var/lib/apt/lists/*
-else
-    echo "Warning: unsupported OS_IMAGE=${OS_IMAGE}"
+if [[ -z ${NEW_IMAGE} ]]; then
+    usage
 fi
+
+mkdir -p "${HERE}/os"
+cp "${HERE}/../lib_scripts/os/"*.sh "${HERE}/os"
+
+# Build new image based on xyna base image
+docker build --build-arg XYNABASE_IMAGE=${BASE_IMAGE} --build-arg OS_IMAGE=${OS_IMAGE} -t ${NEW_IMAGE} .
+
+

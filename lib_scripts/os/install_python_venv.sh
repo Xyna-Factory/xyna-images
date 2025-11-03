@@ -82,10 +82,12 @@ do_install_python_venv() {
   fi
   _XYNA_PATH=$1
   echo "Going to install local venv for python"
+  JEP_VERSION=$( find "${_XYNA_PATH}/server/lib" -iname 'jep-*.jar' | awk -F- '{gsub("\.jar","",$NF); print $NF}' )
+  echo "Found jep version=${JEP_VERSION}"
   python3 -m venv "${_VENV_PATH}"
   source "${_VENV_PATH}/bin/activate"
   pip3 install --upgrade pip
-  pip3 install jep
+  pip3 install "jep==${JEP_VERSION}"
   pip3 uninstall -y setuptools
   deactivate
   rm -rf ~/.cache/pip
@@ -101,6 +103,7 @@ do_install_python_venv() {
   cat "$BLACK_ED_ETC_PROP_FILE_PATH"
   ls -lat "$BLACK_ED_ETC_PROP_FILE_PATH"
   ls -lat "$_VENV_PATH"
+  find "$_VENV_PATH" -iname '*.jar'
 }
 
 

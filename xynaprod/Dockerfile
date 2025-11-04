@@ -22,13 +22,6 @@ ARG OS_IMAGE
 
 USER root
 
-RUN mkdir -p /tmp/os2
-COPY os/*.sh /tmp/os2
-
-RUN chmod ug+x /tmp/os2/*.sh && \
-    ls -l /tmp/os2 && \
-    /tmp/os2/install_additional_pkgs_no_python.sh -o ${OS_IMAGE}
-
 USER ${XYNA_USER}:4242
 
 # configure pid file location

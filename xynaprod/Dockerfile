@@ -22,6 +22,12 @@ ARG OS_IMAGE
 
 USER root
 
+RUN mkdir -p /tmp/os
+COPY os/*.sh /tmp/os
+RUN chmod ug+x /tmp/os/*.sh && \
+    chown ${XYNA_USER}:4242 /tmp/os/install_python_venv.sh && \
+    ls -l /tmp/os
+
 USER ${XYNA_USER}:4242
 
 # configure pid file location

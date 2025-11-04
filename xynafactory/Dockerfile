@@ -33,6 +33,8 @@ RUN /tmp/os/install_python_venv.sh
 USER root
 RUN /tmp/os/postprocess_os_packages.sh -o ${OS_IMAGE}
 
+RUN rm -rf /tmp/os/*
+
 USER ${XYNA_USER}:4242
 
 # Init script

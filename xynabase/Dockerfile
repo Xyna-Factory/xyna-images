@@ -51,8 +51,7 @@ RUN mkdir /var/log/xyna \
     && mkdir -p /etc/opt/xyna/environment \
     && chown -R ${XYNA_USER}:${XYNA_USER} /etc/opt/xyna/environment
 
-RUN /tmp/os/install_os_packages_stage_1.sh -o ${OS_IMAGE} -j ${JAVA_VERSION} && \
-    /tmp/os/install_python_libs_for_stage.sh -o ${OS_IMAGE} -u ${XYNA_USER} -s 1
+RUN /tmp/os/install_os_packages_stage_1.sh -o ${OS_IMAGE} -j ${JAVA_VERSION}
 
 
 #############################

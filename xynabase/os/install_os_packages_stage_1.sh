@@ -63,7 +63,7 @@ elif [[ ${OS_IMAGE} == redhat/ubi*:* ]]; then
 elif [[ ${OS_IMAGE} == ubuntu:* ]]; then
     apt --no-install-recommends -y update
     apt -y upgrade
-    apt-get -y install zip unzip patch netcat-traditional dc curl gnupg
+    apt-get -y install zip unzip patch netcat-traditional dc curl gnupg net-tools
     curl -s https://repos.azul.com/azul-repo.key | gpg --dearmor -o /usr/share/keyrings/azul.gpg
     echo "deb [signed-by=/usr/share/keyrings/azul.gpg] https://repos.azul.com/zulu/deb stable main" | tee /etc/apt/sources.list.d/zulu.list
     apt --no-install-recommends -y update

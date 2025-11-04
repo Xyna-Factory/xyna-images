@@ -24,24 +24,6 @@ usage() {
 }
 
 
-install_full() {
-    cd /tmp
-    unzip XynaFactory*
-    rm XynaFactory*.zip
-    mv XynaFactory* XynaFactoryBundle
-    cp XynaFactoryBundle/XynaFactory_* XynaBlackEdition.zip
-    cp XynaFactoryBundle/XBE_Pre* XBE_Prerequisites.zip
-    unzip XBE_Prerequisites*
-    rm XBE_Prerequisites.zip
-    mv XBE_Prerequisites* XBE_Prerequisites
-    chown -R ${XYNA_USER}:${XYNA_USER} XBE_Prerequisites
-    chmod 777 XBE_Prerequisites/install_prerequisites.sh
-    source /etc/opt/xyna/environment/venv/bin/activate
-    printf $PREREQ_INSTALL_PARAMS | XBE_Prerequisites/install_prerequisites.sh -x
-    deactivate
-}
-
-
 install_without_python() {
     cd /tmp
     unzip XynaFactory*
@@ -54,7 +36,9 @@ install_without_python() {
     mv XBE_Prerequisites* XBE_Prerequisites
     chown -R ${XYNA_USER}:${XYNA_USER} XBE_Prerequisites
     chmod 777 XBE_Prerequisites/install_prerequisites.sh
+    ## note: if prerequisites should configure python, execute source <venv/bin/activate> here
     printf $PREREQ_INSTALL_PARAMS | XBE_Prerequisites/install_prerequisites.sh -x
+    ## note: if prerequisites should configure python, execute deactivate here
 }
 
 

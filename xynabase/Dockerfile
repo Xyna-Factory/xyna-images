@@ -86,6 +86,7 @@ RUN cd /tmp \
 USER ${XYNA_USER}:4242
 ENV HOSTNAME=xynaContainer
 RUN /tmp/XynaBlackEdition/install_black_edition.sh -v -b -c xynafactory -x GlobalApplicationMgmt \
+    && ${XYNA_PATH}/server/xynafactory.sh version | head -1 | awk '{print $5}' > ${XYNA_PATH}/server/version.txt \
     && ${XYNA_PATH}/server/xynafactory.sh stop \
     && rm -rf ${XYNA_PATH}/backup
 
@@ -119,9 +120,9 @@ RUN chmod -R +x /k8s
 
 RUN ${XYNA_PATH}/server/xynafactory.sh start \
     && until ${XYNA_PATH}/server/xynafactory.sh -q status; do echo "########## $? waiting..."; sleep 10; done \
-    && ${XYNA_PATH}/server/xynafactory.sh version | head -1 | awk '{print $5}' > ${XYNA_PATH}/server/version.txt \
     && ${XYNA_PATH}/server/xynafactory.sh stop \
-    && until ${XYNA_PATH}/server/xynafactory.sh status | grep -q "Not running"; do echo "########## $? waiting..."; sleep 10; done
+    && until ${XYNA_PATH}/server/xynafactory.sh status | grep -q "Not running"; do echo "########## $? waiting..."; sleep 10; done \
+    && find ${XYNA_PATH}/server/storage/ -iname '*.journal' | xargs rm
 
 WORKDIR ${XYNA_PATH}/server
 COPY --chown=${XYNA_USER}:${XYNA_USER} configlog.sh /tmp/

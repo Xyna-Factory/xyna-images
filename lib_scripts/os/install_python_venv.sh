@@ -80,9 +80,9 @@ do_install_python_venv() {
     echo "ubuntu_install_python_venv(): Wrong number of parameters."
     exit 99
   fi
-  _XYNA_PATH=$1
+  local _XYNA_PATH=$1
   echo "Going to install local venv for python"
-  JEP_VERSION=$( find "${_XYNA_PATH}/server/lib" -iname 'jep-*.jar' | awk -F- '{gsub("\.jar","",$NF); print $NF}' )
+  local JEP_VERSION=$( find "${_XYNA_PATH}/server/lib" -iname 'jep-*.jar' | awk -F- '{gsub("\.jar","",$NF); print $NF}' )
   echo "Found jep version=${JEP_VERSION}"
   python3 -m venv "${_VENV_PATH}"
   source "${_VENV_PATH}/bin/activate"
@@ -91,7 +91,7 @@ do_install_python_venv() {
   pip3 uninstall -y setuptools
   deactivate
   rm -rf ~/.cache/pip
-  _JEP_PATH=$( find "${_VENV_PATH}" -name 'libjep.so' )
+  local _JEP_PATH=$( find "${_VENV_PATH}" -name 'libjep.so' )
   cat "${_XYNA_PATH}/server/server.policy"
   cat "$BLACK_ED_ETC_PROP_FILE_PATH"
   ls -lat "$BLACK_ED_ETC_PROP_FILE_PATH"

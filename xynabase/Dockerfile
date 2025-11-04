@@ -131,6 +131,8 @@ RUN chmod 777 /tmp/configlog.sh \
 && sed -ri 's# <AppenderRef ref="SYSLOG"/># <AppenderRef ref="STDOUT"/>#' ${XYNA_PATH}/server/log4j2.xml \
 && sed -ri 's#  <Root level="[a-z]*">#  <Root level="warn">#' ${XYNA_PATH}/server/log4j2.xml
 
+RUN rm -rf /tmp/os/*
+
 USER 4242:4242
 ENV HOSTNAME=xynaContainer
 CMD ["/k8s/xyna/factory.sh"]

@@ -29,7 +29,7 @@ RUN chmod ug+x /tmp/os/*.sh && \
     ls -l /tmp/os && \
     /tmp/os/install_additional_pkgs.sh -o ${OS_IMAGE}
 USER ${XYNA_USER}:4242
-RUN /tmp/os/install_python_venv.sh -o ${OS_IMAGE} -p ${XYNA_PATH}
+RUN /tmp/os/install_python_venv.sh
 USER root
 RUN /tmp/os/postprocess_os_packages.sh -o ${OS_IMAGE}
 

@@ -15,37 +15,6 @@
 # limitations under the License.
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-OS_IMAGE=""
-XYNA_PATH=""
-
-usage() {
-    echo "Usage: $0 -o <OS-Image> -p <Xyna-Path>"
-    exit 1
-}
-
-
-while getopts ":o:p:" option; do
-    case "${option}" in
-        o)
-            OS_IMAGE=${OPTARG}
-            ;;
-        p)
-            XYNA_PATH=${OPTARG}
-            ;;
-        *)
-            usage
-            ;;
-    esac
-done
-
-if [[ -z ${OS_IMAGE} ]]; then
-    usage
-fi
-if [[ -z ${XYNA_PATH} ]]; then
-    usage
-fi
-
-
 BLACK_ED_ETC_PROP_FILE_PATH="/etc/opt/xyna/environment/black_edition_001.properties"
 _VENV_PATH="/etc/opt/xyna/environment/venv"
 
@@ -77,7 +46,7 @@ adapt_env_property() {
 ## parameters: xyna-user, xyna-path
 do_install_python_venv() {
   if [[ $# -ne 1 ]]; then
-    echo "ubuntu_install_python_venv(): Wrong number of parameters."
+    echo "do_install_python_venv(): Wrong number of parameters."
     exit 99
   fi
   local _XYNA_PATH=$1
@@ -106,13 +75,6 @@ do_install_python_venv() {
   find "$_VENV_PATH" -iname '*.jar'
 }
 
-
-if [[ ${OS_IMAGE} == oraclelinux:* ]]; then
-    do_install_python_venv ${XYNA_PATH}
-elif [[ ${OS_IMAGE} == redhat/ubi*:* ]]; then
-    do_install_python_venv ${XYNA_PATH}
-elif [[ ${OS_IMAGE} == ubuntu:* ]]; then
-    do_install_python_venv ${XYNA_PATH}
-else
-    echo "Warning: unsupported OS_IMAGE=${OS_IMAGE}"
-fi
+XYNA_PATH=$( awk -F= '{ if ($1 == "installation.folder") print $2}' "$BLACK_ED_ETC_PROP_FILE_PATH" )
+echo "XYNA_PATH=${XYNA_PATH}"
+do_install_python_venv ${XYNA_PATH}

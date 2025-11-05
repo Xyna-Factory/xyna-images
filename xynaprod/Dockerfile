@@ -18,16 +18,9 @@
 ARG XYNABASE_IMAGE=xynabase:xynamain-imagemain-java11-ubuntu24.04
 FROM ${XYNABASE_IMAGE}
 
-ARG OS_IMAGE
-
-USER root
-
-USER ${XYNA_USER}:4242
-
 # configure pid file location
 RUN mkdir ${XYNA_PATH}/tmp \
     && sed -i 's/pid\.folder=.*/pid.folder=\/tmp/' /etc/opt/xyna/environment/black_edition_001.properties \
-#   && sed -i 's/pid\.folder=.*/pid.folder=\/opt\/xyna\/xyna_001\/tmp/' /etc/opt/xyna/environment/black_edition_001.properties \
     && rm -rf /k8s/xyna/dev
 
 # configure persistence layers and table configuration

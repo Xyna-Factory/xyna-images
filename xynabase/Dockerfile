@@ -67,7 +67,7 @@ RUN /tmp/os/install_os_packages_stage_2.sh -o ${OS_IMAGE}
 
 # install prerequisites
 # create files in /etc/opt/xyna/environment: xynaContainer.properties black_edition_001.properties and xynaContainer.component.properties
-RUN /tmp/os/handle_prerequisites.sh -o ${OS_IMAGE} -u ${XYNA_USER}
+RUN /tmp/os/handle_prerequisites.sh -u ${XYNA_USER}
 RUN /tmp/os/adjust_blackedition_properties.sh -j ${JAVA_VERSION}
 
 

@@ -15,11 +15,10 @@
 # limitations under the License.
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-OS_IMAGE=""
 XYNA_USER=""
 
 usage() {
-    echo "Usage: $0 -o <OS-Image> -u <Xyna-User-Name>"
+    echo "Usage: $0 -u <Xyna-User-Name>"
     exit 1
 }
 
@@ -44,9 +43,6 @@ install_without_python() {
 
 while getopts ":o:u:" option; do
     case "${option}" in
-        o)
-            OS_IMAGE=${OPTARG}
-            ;;
         u)
             XYNA_USER=${OPTARG}
             ;;
@@ -57,20 +53,8 @@ while getopts ":o:u:" option; do
 done
 
 
-if [[ -z ${OS_IMAGE} ]]; then
-    usage
-fi
 if [[ -z ${XYNA_USER} ]]; then
     usage
 fi
 
-
-if [[ ${OS_IMAGE} == oraclelinux:* ]]; then
-    install_without_python
-elif [[ ${OS_IMAGE} == redhat/ubi*:* ]]; then
-    install_without_python
-elif [[ ${OS_IMAGE} == ubuntu:* ]]; then
-    install_without_python
-else
-   echo "Warning: unsupported OS_IMAGE=${OS_IMAGE}"
-fi
+install_without_python

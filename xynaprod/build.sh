@@ -61,6 +61,6 @@ mkdir -p "${HERE}/os"
 cp "${HERE}/../lib_scripts/os/"*.sh "${HERE}/os"
 
 # Build new image based on xyna base image
-docker build --build-arg XYNABASE_IMAGE=${BASE_IMAGE} --build-arg OS_IMAGE=${OS_IMAGE} -t ${NEW_IMAGE} .
+docker build --build-arg XYNABASE_IMAGE=${BASE_IMAGE} -t ${NEW_IMAGE} .
 
 

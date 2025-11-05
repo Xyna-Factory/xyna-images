@@ -20,21 +20,16 @@ HERE=$(dirname "$0")
 cd "${HERE}"
 HERE=$(pwd)
 
-
-OS_IMAGE=""
 BASE_IMAGE=""
 NEW_IMAGE=""
 
 usage() {
-    echo "Usage: $0 -o <OS-IMAGE> -b <BASE-IMAGE> -n <NEW-IMAGE>"
+    echo "Usage: $0 -b <BASE-IMAGE> -n <NEW-IMAGE>"
     exit 1
 }
 
 while getopts ":b:n:o:" option; do
     case "${option}" in
-        o)
-            OS_IMAGE=${OPTARG}
-            ;;
         b)
             BASE_IMAGE=${OPTARG}
             ;;
@@ -48,9 +43,6 @@ while getopts ":b:n:o:" option; do
 done
 
 if [[ -z ${BASE_IMAGE} ]]; then
-    usage
-fi
-if [[ -z ${OS_IMAGE} ]]; then
     usage
 fi
 if [[ -z ${NEW_IMAGE} ]]; then

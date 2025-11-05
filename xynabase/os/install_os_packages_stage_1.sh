@@ -61,13 +61,17 @@ elif [[ ${OS_IMAGE} == redhat/ubi*:* ]]; then
     yum clean all
     dnf install -y gcc python3-devel
 elif [[ ${OS_IMAGE} == ubuntu:* ]]; then
-    apt -y update
+    apt --no-install-recommends -y update
     apt -y upgrade
-    apt-get -y install zip unzip patch wget netcat-traditional xinetd net-tools bind9utils vim less dc libxml2-utils gnupg ca-certificates curl gcc python3-dev python3-venv python3-pip systemd uuid-runtime
+    apt-get -y install zip unzip patch netcat-traditional dc curl gnupg net-tools
     curl -s https://repos.azul.com/azul-repo.key | gpg --dearmor -o /usr/share/keyrings/azul.gpg
     echo "deb [signed-by=/usr/share/keyrings/azul.gpg] https://repos.azul.com/zulu/deb stable main" | tee /etc/apt/sources.list.d/zulu.list
-    apt -y update
+    apt --no-install-recommends -y update
     apt -y install zulu${JAVA_VERSION}-jdk-headless
+    apt-get -y purge curl gnupg
+    apt-get -y autoremove
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
 else
    echo "Warning: unsupported OS_IMAGE=${OS_IMAGE}"
 fi

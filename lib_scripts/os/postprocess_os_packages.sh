@@ -1,6 +1,6 @@
 #!/bin/bash
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Copyright 2023 Xyna GmbH, Germany
+# Copyright 2025 Xyna GmbH, Germany
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -39,13 +39,14 @@ fi
 
 
 if [[ ${OS_IMAGE} == oraclelinux:* ]]; then
-    if [[ ${OS_IMAGE} == oraclelinux:8 ]]; then
-        pip3 uninstall -y setuptools
-    fi
+    echo "No additional package installation needed"
 elif [[ ${OS_IMAGE} == redhat/ubi*:* ]]; then
-    pip3 uninstall -y setuptools
+    echo "No additional package installation needed"
 elif [[ ${OS_IMAGE} == ubuntu:* ]]; then
     apt-get -y remove python3-pip
+    apt-get -y autoremove
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
 else
-   echo "Warning: unsupported OS_IMAGE=${OS_IMAGE}"
+    echo "Warning: unsupported OS_IMAGE=${OS_IMAGE}"
 fi

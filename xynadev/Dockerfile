@@ -16,12 +16,31 @@
 
 # syntax=docker/dockerfile:1
 ARG XYNABASE_IMAGE=xynabase:xynamain-imagemain-java11-ubuntu24.04
+
 FROM ${XYNABASE_IMAGE}
+
+ARG OS_IMAGE
+
+USER root
+
+RUN mkdir -p /tmp/os
+COPY os/*.sh /tmp/os
+RUN chmod ug+x /tmp/os/*.sh && \
+    chown ${XYNA_USER}:4242 /tmp/os/install_python_venv.sh && \
+    ls -l /tmp/os && \
+    /tmp/os/install_additional_pkgs.sh -o ${OS_IMAGE}
+USER ${XYNA_USER}:4242
+RUN /tmp/os/install_python_venv.sh
+USER root
+RUN /tmp/os/postprocess_os_packages.sh -o ${OS_IMAGE}
+
+RUN rm -rf /tmp/os/*
+
+USER ${XYNA_USER}:4242
 
 ARG HTTP_TRIGGER_INTERFACE_CHOICE="0\n"
 
 COPY --chown=${XYNA_USER}:${XYNA_USER} GitIntegration*.app /tmp/
-
 
 RUN mkdir ${XYNA_PATH}/tmp \
     && sed -i 's/pid\.folder=.*/pid.folder=\/tmp/' /etc/opt/xyna/environment/black_edition_001.properties
@@ -37,7 +56,6 @@ RUN ${XYNA_PATH}/server/xynafactory.sh start \
 
 # prepare revisions, server and xmomrepository folder - mount persistent volume on ${XYNA_PATH}
 RUN cp -r ${XYNA_PATH} ${XYNA_PATH}/../xyna_image
-
 
 USER 4242:4242
 ENV HOSTNAME=xynaContainer

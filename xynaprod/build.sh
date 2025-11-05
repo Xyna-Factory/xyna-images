@@ -1,6 +1,7 @@
 #!/bin/bash
+
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Copyright 2024 Xyna GmbH, Germany
+# Copyright 2025 Xyna GmbH, Germany
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,8 +16,43 @@
 # limitations under the License.
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-set -e
+HERE=$(dirname "$0")
+cd "${HERE}"
+HERE=$(pwd)
 
-JEPLINE=$(grep "jep.module.path=" /etc/opt/xyna/environment/black_edition_001.properties)
-JEP_PATH=${JEPLINE#*=}
-sed -i "s#//permission java.lang.RuntimePermission \"loadLibrary.TOKEN_PATH_TO_LIB\";#permission java.lang.RuntimePermission \"loadLibrary.${JEP_PATH}\";#" ${XYNA_PATH}/server/server.policy
+BASE_IMAGE=""
+NEW_IMAGE=""
+
+usage() {
+    echo "Usage: $0 -b <BASE-IMAGE> -n <NEW-IMAGE>"
+    exit 1
+}
+
+while getopts ":b:n:o:" option; do
+    case "${option}" in
+        b)
+            BASE_IMAGE=${OPTARG}
+            ;;
+        n)
+            NEW_IMAGE=${OPTARG}
+            ;;
+        *)
+            usage
+            ;;
+    esac
+done
+
+if [[ -z ${BASE_IMAGE} ]]; then
+    usage
+fi
+if [[ -z ${NEW_IMAGE} ]]; then
+    usage
+fi
+
+mkdir -p "${HERE}/os"
+cp "${HERE}/../lib_scripts/os/"*.sh "${HERE}/os"
+
+# Build new image based on xyna base image
+docker build --build-arg XYNABASE_IMAGE=${BASE_IMAGE} -t ${NEW_IMAGE} .
+
+

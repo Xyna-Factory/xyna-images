@@ -21,7 +21,6 @@ FROM ${XYNABASE_IMAGE}
 # configure pid file location
 RUN mkdir ${XYNA_PATH}/tmp \
     && sed -i 's/pid\.folder=.*/pid.folder=\/tmp/' /etc/opt/xyna/environment/black_edition_001.properties \
-#   && sed -i 's/pid\.folder=.*/pid.folder=\/opt\/xyna\/xyna_001\/tmp/' /etc/opt/xyna/environment/black_edition_001.properties \
     && rm -rf /k8s/xyna/dev
 
 # configure persistence layers and table configuration

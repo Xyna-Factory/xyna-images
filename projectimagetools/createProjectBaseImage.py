@@ -26,6 +26,7 @@ TMP_CONTAINER_NAME='tmp.xyna.container.0'
 XYNA_BASE_IMAGE="xynafactory/xynabase:latest"
 PROP_NAME_BASE_IMAGE="BASE_IMAGE"
 PROP_NAME_TARGET_IMAGE="TARGET_BASE_IMAGE"
+FILTERED_APPS=["Base", "FileMgmt", "GlobalApplicationMgmt", "Node", "Processing", "GuiHttp"]
 
 
 DOCKER_TEMPLATE=r"""
@@ -117,6 +118,15 @@ def get_app_name_from_file_name(app_path):
   return parts[0]
 
 
+def filter_apps(applist):
+  ret = []
+  for app in applist:
+    if app[0] in FILTERED_APPS:
+      continue
+    ret.append(app)
+  return ret
+
+
 def build_app_property_list_string(app_paths):
   ret = ""
   #pathlist = app_paths.split("\n")
@@ -128,6 +138,7 @@ def build_app_property_list_string(app_paths):
       #print(name)
       app = [name, path]
       applist.append(app)
+  applist = filter_apps(applist)
   applist = sorted(applist, key=lambda elem: elem[0])
   for app in applist:
     #ret = ret + "APP_" + name + "=FALSE    #" + path + "\n"
@@ -135,9 +146,6 @@ def build_app_property_list_string(app_paths):
   return ret
 
 
-# get prop list:
-# line, part before # has =, (and = not first)
-# split by =
 def parse_properties(prop_file_content):
   ret = []
   #linelist = prop_file_content.split("\n")

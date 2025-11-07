@@ -20,15 +20,13 @@ import subprocess
 import sys
 import os
 
-
 SCRIPT_VERSION='0.0.1'
 TMP_CONTAINER_NAME='tmp.xyna.container.0'
-XYNA_BASE_IMAGE="xynafactory/xynabase:latest"
 PROP_NAME_BASE_IMAGE="BASE_IMAGE"
 PROP_NAME_TARGET_IMAGE="TARGET_BASE_IMAGE"
 FILTERED_APPS=["Base", "FileMgmt", "GlobalApplicationMgmt", "Node", "Processing"]
-#FILTERED_APPS=["Base", "FileMgmt", "GlobalApplicationMgmt", "Node", "Processing", "GuiHttp", "Http", "ZetaFramework", "XynaPropertyMgmt", "UserRoleManagement"]
 
+APP_LINE=r'  && printf "0\n" | /tmp/XynaBlackEdition/install_black_edition.sh -x '
 
 DOCKER_TEMPLATE=r"""
 ARG XYNABASE_IMAGE=###_BASE_IMAGE_###
@@ -37,10 +35,9 @@ FROM ${XYNABASE_IMAGE} AS xyna-install-stage-1
 
 USER 4242:4242
 
-
-RUN ${XYNA_PATH}/server/xynafactory.sh start \
-  && printf "0\n" | /tmp/XynaBlackEdition/install_black_edition.sh -x ###_APPS_### \
-  && ${XYNA_PATH}/server/xynafactory.sh stop
+RUN /tmp/configlog.sh log_nonblock \
+  && ${XYNA_PATH}/server/xynafactory.sh start \
+###_APPS_###  && ${XYNA_PATH}/server/xynafactory.sh stop
 
 USER root
 
@@ -80,11 +77,11 @@ def does_container_exist(name):
   return result.returncode == 0
 
 
-def build_xyna_base_container():
+def build_xyna_base_container(image_name):
   if does_container_exist(TMP_CONTAINER_NAME):
     result = subprocess.run(["docker", "rm", TMP_CONTAINER_NAME])
     result.check_returncode()
-  result = subprocess.run(["docker", "run", "-d", "--name", TMP_CONTAINER_NAME, XYNA_BASE_IMAGE])
+  result = subprocess.run(["docker", "run", "-d", "--name", TMP_CONTAINER_NAME, image_name])
   result.check_returncode()
 
 
@@ -95,20 +92,17 @@ def drop_xyna_base_container():
   result.check_returncode()
 
 
-def get_app_file_list_string():
-  build_xyna_base_container()
+def get_app_file_list_string(image_name):
+  print("Loading xyna base docker image to determine applications list...", flush=True)
+  build_xyna_base_container(image_name)
   ret = get_app_file_list_impl()
   drop_xyna_base_container()
   return ret
 
 
 def get_app_file_list_impl():
-  #docker_cmd=['docker exec -t pull.1507.xyna.base.4 bash -c "find /tmp/XynaBlackEdition/components -iname \\*.app " '
   docker_cmd=['docker', 'exec', '-t', TMP_CONTAINER_NAME, 'bash', '-c', "find /tmp/XynaBlackEdition/components -iname \\*.app "]
-
   app_paths=subprocess.check_output(docker_cmd, shell=True, text=True)
-  #print(app_files)
-  #print(app_files.rstrip())
   return app_paths
 
 
@@ -129,26 +123,22 @@ def filter_apps(applist):
 
 def build_app_property_list_string(app_paths):
   ret = ""
-  #pathlist = app_paths.split("\n")
   pathlist = app_paths.splitlines()
   applist = []
   for path in pathlist:
     if "." in path:
       name = get_app_name_from_file_name(path)
-      #print(name)
       app = [name, path]
       applist.append(app)
   applist = filter_apps(applist)
   applist = sorted(applist, key=lambda elem: elem[0])
   for app in applist:
-    #ret = ret + "APP_" + name + "=FALSE    #" + path + "\n"
     ret = ret + "APP_" + app[0] + "=FALSE    #" + app[1] + "\n"
   return ret
 
 
 def parse_properties(prop_file_content):
   ret = []
-  #linelist = prop_file_content.split("\n")
   linelist = prop_file_content.splitlines()
   for line in linelist:
     nocomment = line.split("#")[0].strip()
@@ -156,7 +146,6 @@ def parse_properties(prop_file_content):
       continue
     if nocomment.startswith("="):
       continue
-    #parts = nocomment.split("=")
     pos = nocomment.find("=")
     part0 = nocomment[:pos]
     part1 = nocomment[pos + 1:]
@@ -168,7 +157,6 @@ def parse_properties(prop_file_content):
 
 def build_apps_to_install(proplist):
   ret = ""
-  isfirst = True
   for prop in proplist:
     if len(prop) != 2:
       continue
@@ -178,13 +166,8 @@ def build_apps_to_install(proplist):
     propval = prop[1].lower()
     if propval != "true":
       continue
-    #appname = propname.split("_")[1].strip()
     appname = propname.removeprefix("APP_")
-    if isfirst:
-      isfirst = False
-    else:
-      ret += ", "
-    ret += appname
+    ret += APP_LINE + appname + " \\" + "\n"
   return ret
 
 
@@ -215,15 +198,12 @@ def gen_prop_file_content(image_name):
   content += " version " + SCRIPT_VERSION;
   content += "\n\n"
   content += PROP_NAME_BASE_IMAGE + "=" + image_name + "\n"
-  #content += PROP_NAME_TARGET_IMAGE + "=" + image_name + "\n"
   content += PROP_NAME_TARGET_IMAGE + "=my.project.image.1\n"
   content += "\n\n"
-
   content += "# Xyna Applications - Select which Xyna Application should be included.\n"
   content += "# Including an application automatically installs all dependent applications.\n"
   content += "\n"
-
-  pathstr = get_app_file_list_string()
+  pathstr = get_app_file_list_string(image_name)
   propstr = build_app_property_list_string(pathstr)
   content += propstr + "\n"
   content += "\n"
@@ -254,9 +234,6 @@ def gen_docker_file_content(prop_file):
   prop_content = read_file(prop_file)
   proplist = parse_properties(prop_content)
   apps = build_apps_to_install(proplist)
-  #print(apps)
-  #if True:
-  #  return apps
   base_image = extract_prop_val(proplist, PROP_NAME_BASE_IMAGE)
   target_image = extract_prop_val(proplist, PROP_NAME_TARGET_IMAGE)
   ret = DOCKER_TEMPLATE
@@ -291,7 +268,6 @@ def main():
   if len(sys.argv) != 6:
     usage()
   variant = sys.argv[1]
-  # read_param("p1")
   if variant == "createPropertiesFile":
     gen_prop_file(read_param("input"), read_param("output"))
   elif variant == "createDockerfile":
@@ -301,40 +277,3 @@ def main():
 
 
 main()
-
-
-# createPropertiesFile -input <image> -output <file>
-# createDockerfile -input <file> -output <file>
-
-
-#val = read_param("p1")
-#print(val)
-
-#val = read_param("p0")
-#print(val)
-
-#pathstr = get_app_file_list_string()
-#print(pathstr)
-
-#propstr = build_app_property_list_string(pathstr)
-#print(propstr)
-
-#tmp = build_apps_to_install("APP_aaa = TRUE" + "\n" + "APP_baa = True" + "\n" + "APP_ccc = true" + "\n")
-#print(tmp)
-
-#print(does_container_exist("tmp_build_1507_b1"))
-#print(does_container_exist("tmp_build_1507_x1"))
-
-#write_file("tmp.txt", "my-text-1")
-
-
-#  if len(sys.argv) != 2:
-#    print("Usage: ", sys.argv[0], " <path to application.xml> ")
-#    return
-
-#print(os.path.basename(sys.argv[0]))
-
-#print(DOCKER_TEMPLATE)
-
-
-

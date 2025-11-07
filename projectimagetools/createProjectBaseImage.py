@@ -26,7 +26,8 @@ TMP_CONTAINER_NAME='tmp.xyna.container.0'
 XYNA_BASE_IMAGE="xynafactory/xynabase:latest"
 PROP_NAME_BASE_IMAGE="BASE_IMAGE"
 PROP_NAME_TARGET_IMAGE="TARGET_BASE_IMAGE"
-FILTERED_APPS=["Base", "FileMgmt", "GlobalApplicationMgmt", "Node", "Processing", "GuiHttp"]
+FILTERED_APPS=["Base", "FileMgmt", "GlobalApplicationMgmt", "Node", "Processing"]
+#FILTERED_APPS=["Base", "FileMgmt", "GlobalApplicationMgmt", "Node", "Processing", "GuiHttp", "Http", "ZetaFramework", "XynaPropertyMgmt", "UserRoleManagement"]
 
 
 DOCKER_TEMPLATE=r"""
@@ -38,8 +39,7 @@ USER 4242:4242
 
 
 RUN ${XYNA_PATH}/server/xynafactory.sh start \
-  && printf "0\n" | /tmp/XynaBlackEdition/install_black_edition.sh -x GuiHttp \
-  && /tmp/XynaBlackEdition/install_black_edition.sh -x ###_APPS_### \
+  && printf "0\n" | /tmp/XynaBlackEdition/install_black_edition.sh -x ###_APPS_### \
   && ${XYNA_PATH}/server/xynafactory.sh stop
 
 USER root
@@ -277,7 +277,7 @@ def read_param(name):
     if arg == name:
       matched = True
   print("Expected parameter missing: " + name)
-  sys.exit(1)
+  usage()
 
 
 def usage():

@@ -24,9 +24,25 @@ SCRIPT_VERSION='0.0.1'
 TMP_CONTAINER_NAME='tmp.xyna.container.0'
 PROP_NAME_BASE_IMAGE="BASE_IMAGE"
 PROP_NAME_TARGET_IMAGE="TARGET_BASE_IMAGE"
+
+
 FILTERED_APPS=["Base", "FileMgmt", "GlobalApplicationMgmt", "Node", "Processing"]
 
 APP_LINE=r'  && printf "0\n" | /tmp/XynaBlackEdition/install_black_edition.sh -x '
+
+
+PROP_FILE_HEADER=f"""# Created by {os.path.basename(sys.argv[0])} version {SCRIPT_VERSION}
+
+{PROP_NAME_BASE_IMAGE}=###_BASE_IMAGE_###
+{PROP_NAME_TARGET_IMAGE}=my.project.image.1
+"""
+
+
+PROP_FILE_APP_BLOCK_START="""
+# Xyna Applications - Select which Xyna Application should be included.
+# Including an application automatically installs all dependent applications.
+"""
+
 
 DOCKER_TEMPLATE=r"""
 ARG XYNABASE_IMAGE=###_BASE_IMAGE_###
@@ -37,7 +53,7 @@ USER 4242:4242
 
 RUN /tmp/configlog.sh log_nonblock \
   && ${XYNA_PATH}/server/xynafactory.sh start \
-###_APPS_###  && ${XYNA_PATH}/server/xynafactory.sh stop
+###_COMMANDS_###  && ${XYNA_PATH}/server/xynafactory.sh stop
 
 USER root
 
@@ -62,12 +78,113 @@ CMD ["/k8s/xyna/factory.sh"]
 """
 
 
-def read_file(name):
+class XynaAppList:
+  def __init__(self, paths: str = None, properties: str = None):
+    self.applist = []
+    if paths is not None:
+      self.init_by_paths(paths)
+    elif properties is not None:
+      self.init_by_properties(properties)
+    if len(self.applist) > 0:
+      self.applist = sorted(self.applist, key=lambda elem: elem.name)
+
+  def init_by_paths(self, paths: str):
+    linelist = paths.splitlines()
+    for line in linelist:
+      app = XynaApp(path = line)
+      if app.valid:
+        self.applist.append(app)
+
+  def init_by_properties(self, props: str):
+    linelist = props.splitlines()
+    for line in linelist:
+      app = XynaApp(prop_line = line)
+      if app.valid:
+        self.applist.append(app)
+
+  def __str__(self) -> str:
+    ret = ""
+    for app in self.applist:
+      ret += str(app) + "\n"
+    return ret
+### end of class declaration
+
+
+class XynaApp:
+  def __init__(self, path: str = None, prop_line: str = None):
+    self.valid = False
+    self.name = ""
+    self.path = ""
+    self.install_flag = False
+    if path is not None:
+      self.init_by_path(path)
+    elif prop_line is not None:
+      self.init_by_prop_line(prop_line)
+
+  def init_by_path(self, path_in: str):
+    path = path_in.strip()
+    if len(path) < 1:
+      return
+    if not path.endswith(".app"):
+      return
+    parts = path.split("/")
+    parts = parts[-1].split(".")
+    name = parts[0].strip()
+    if len(name) < 1:
+      return
+    self.name = name
+    self.path = path
+    self.valid = True
+
+  def init_by_prop_line(self, line_in: str):
+    line = line_in.strip()
+    if not line_in.startswith("APP_"):
+      return
+    index = line.find("#")
+    if index < 0:
+      return
+    if line.endswith("#"):
+      return
+    path = line[index + 1:].strip()
+    nocomment = line[:index].strip()
+    if not "=" in nocomment:
+      return
+    if nocomment.startswith("="):
+      return
+    if nocomment.endswith("="):
+      return
+    index = nocomment.find("=")
+    part0 = nocomment[:index].strip()
+    if not part0.startswith("APP_"):
+      return
+    name = part0[4:].strip()
+    if len(name) < 1:
+      return
+    part1 = nocomment[index + 1:].strip()
+    if len(part1) < 1:
+      return
+    if part1.lower() == "true":
+      self.install_flag = True
+    self.path = path
+    self.name = name
+    self.valid = True
+
+  def write_prop_file_line(self) -> str:
+    if not self.valid:
+      return ""
+    return "APP_" + self.name + "=FALSE    #" + self.path
+
+  def __str__(self) -> str:
+    return "valid=" + str(self.valid) + ", name=" + self.name + ", path=" + self.path + ", install_flag=" + str(self.install_flag)
+### end of class declaration
+
+
+def read_file(name: str) -> str:
   with open(name) as f:
     return f.read()
 
 
-def write_file(name, content):
+def write_file(name: str, content: str):
   with open(name, "w") as f:
     f.write(content)
 
@@ -77,7 +194,7 @@ def does_container_exist(name):
   return result.returncode == 0
 
 
-def build_xyna_base_container(image_name):
+def start_xyna_base_container(image_name):
   if does_container_exist(TMP_CONTAINER_NAME):
     result = subprocess.run(["docker", "rm", TMP_CONTAINER_NAME])
     result.check_returncode()
@@ -94,7 +211,7 @@ def drop_xyna_base_container():
 
 def get_app_file_list_string(image_name):
   print("Loading xyna base docker image to determine applications list...", flush=True)
-  build_xyna_base_container(image_name)
+  start_xyna_base_container(image_name)
   ret = get_app_file_list_impl()
   drop_xyna_base_container()
   return ret
@@ -118,6 +235,22 @@ def filter_apps(applist):
     if app[0] in FILTERED_APPS:
       continue
     ret.append(app)
+  return ret
+
+
+def build_app_property_list_string_old(app_paths):
+  ret = ""
+  pathlist = app_paths.splitlines()
+  applist = []
+  for path in pathlist:
+    if "." in path:
+      name = get_app_name_from_file_name(path)
+      app = [name, path]
+      applist.append(app)
+  applist = filter_apps(applist)
+  applist = sorted(applist, key=lambda elem: elem[0])
+  for app in applist:
+    ret = ret + "APP_" + app[0] + "=FALSE    #" + app[1] + "\n"
   return ret
 
 
@@ -171,29 +304,7 @@ def build_apps_to_install(proplist):
   return ret
 
 
-def build_apps_to_install_old(prop_file_content):
-  ret = ""
-  linelist = prop_file_content.split("\n")
-  isfirst = True
-  for line in linelist:
-    if not line.startswith("APP_"):
-      continue
-    nocomment = line.split("#")[0].strip()
-    if not "=" in nocomment:
-      continue
-    parts = nocomment.split("=")
-    if parts[1].strip().lower() != "true":
-      continue
-    appname = parts[0].split("_")[1].strip()
-    if isfirst:
-      isfirst = False
-    else:
-      ret += ", "
-    ret += appname
-  return ret
-
-
-def gen_prop_file_content(image_name):
+def gen_prop_file_content_old(image_name):
   content = "# Created by " + os.path.basename(sys.argv[0])
   content += " version " + SCRIPT_VERSION;
   content += "\n\n"
@@ -204,6 +315,22 @@ def gen_prop_file_content(image_name):
   content += "# Including an application automatically installs all dependent applications.\n"
   content += "\n"
   pathstr = get_app_file_list_string(image_name)
+  propstr = build_app_property_list_string(pathstr)
+  content += propstr + "\n"
+  content += "\n"
+  return content
+
+
+def gen_prop_file_content(image_name):
+  content = PROP_FILE_HEADER.replace("###_BASE_IMAGE_###", image_name)
+  content += "\n"
+  content += PROP_FILE_APP_BLOCK_START
+  content += "\n"
+  #pathstr = get_app_file_list_string(image_name)
+  ### fixme
+  #write_file("app_paths.tmp", pathstr)
+  pathstr = read_file("app_paths.tmp")
+  ###
   propstr = build_app_property_list_string(pathstr)
   content += propstr + "\n"
   content += "\n"
@@ -239,7 +366,7 @@ def gen_docker_file_content(prop_file):
   ret = DOCKER_TEMPLATE
   ret = ret.replace("###_BASE_IMAGE_###", base_image)
   ret = ret.replace("###_TARGET_IMAGE_###", target_image)
-  ret = ret.replace("###_APPS_###", apps)
+  ret = ret.replace("###_COMMANDS_###", apps)
   return ret
 
 
@@ -276,4 +403,43 @@ def main():
     usage()
 
 
-main()
+#main()
+
+#lines = read_file("project.properties.v3")
+lines = read_file("app_paths.tmp")
+#applist = XynaAppList(properties=lines)
+applist = XynaAppList(paths=lines)
+print(applist)
+
+
+def test_apps_1():
+  app1 = XynaApp(path="my-app-1.app")
+  print(app1)
+  app2 = XynaApp(path="/xx/yy/my-app-2.app")
+  print(app2)
+  line = app2.write_prop_file_line()
+  print(line)
+  line = line.replace("FALSE", "TRUE")
+  line = line.replace("2", "3")
+  app3 = XynaApp(prop_line=line)
+  print(app3)
+  app4 = XynaApp()
+  print(app4)
+
+
+#var1 = "abc"
+#print(var1, len(var1))
+#var1 += "xy"
+#print(var1, len(var1))
+
+
+
+#app1 = XynaApp("my-app-1", "p1")
+#app2 = XynaApp("my-app-2", "p2")
+#print(app1, app2)
+
+#vara = {}
+#print(type(vara))
+#varb= []
+#print(type(varb))
+

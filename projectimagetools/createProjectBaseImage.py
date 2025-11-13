@@ -25,8 +25,7 @@ TMP_CONTAINER_NAME='tmp.xyna.container.0'
 PROP_NAME_BASE_IMAGE="BASE_IMAGE"
 PROP_NAME_TARGET_IMAGE="TARGET_BASE_IMAGE"
 
-
-FILTERED_APPS=["Base", "FileMgmt", "GlobalApplicationMgmt", "Node", "Processing"]
+#FILTERED_APPS=["Base", "FileMgmt", "GlobalApplicationMgmt", "Node", "Processing"]
 
 APP_LINE=r'  && printf "0\n" | /tmp/XynaBlackEdition/install_black_edition.sh -x '
 
@@ -241,6 +240,14 @@ class XynaAppList:
       if app.valid:
         self.applist.append(app)
 
+  def filter_apps(self, filter_app_names: list):
+    ret = []
+    for app in self.applist:
+      if app.name in filter_app_names:
+        continue
+      ret.append(app)
+    self.applist = ret
+
   def write_property_lines(self) -> str:
     ret = ""
     for app in self.applist:
@@ -266,111 +273,51 @@ def write_file(name: str, content: str):
     f.write(content)
 
 
-def does_container_exist(name):
+def does_container_exist(name: str) -> bool:
   result = subprocess.run(["docker", "container", "inspect", name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
   return result.returncode == 0
 
 
-def start_xyna_base_container(image_name):
+def start_xyna_base_container(image_name: str):
   if does_container_exist(TMP_CONTAINER_NAME):
-    result = subprocess.run(["docker", "rm", TMP_CONTAINER_NAME])
-    result.check_returncode()
+    drop_xyna_base_container()
   result = subprocess.run(["docker", "run", "-d", "--name", TMP_CONTAINER_NAME, image_name])
   result.check_returncode()
 
 
 def drop_xyna_base_container():
   result = subprocess.run(["docker", "stop", TMP_CONTAINER_NAME])
-  result.check_returncode()
   result = subprocess.run(["docker", "rm", TMP_CONTAINER_NAME])
   result.check_returncode()
 
 
-def get_app_file_list_string(image_name):
-  print("Loading xyna base docker image to determine applications list...", flush=True)
-  start_xyna_base_container(image_name)
-  ret = get_app_file_list_impl()
-  drop_xyna_base_container()
-  return ret
-
-
-def get_app_file_list_impl():
+def get_app_file_list_string() -> str:
   docker_cmd=['docker', 'exec', '-t', TMP_CONTAINER_NAME, 'bash', '-c', "find /tmp/XynaBlackEdition/components -iname \\*.app "]
   app_paths=subprocess.check_output(docker_cmd, shell=True, text=True)
   return app_paths
 
 
-def get_app_name_from_file_name(app_path):
-  parts = app_path.split("/")
-  parts = parts[-1].split(".")
-  return parts[0]
+def get_installed_app_names() -> str:
+  docker_cmd=['docker', 'exec', '-t', TMP_CONTAINER_NAME, 'bash', '-c', """awk -F= '($1=="installation.folder") { print $2 }'  /etc/opt/xyna/environment/black_edition_001.properties"""]
+  xyna_path = subprocess.check_output(docker_cmd, shell=True, text=True)
+  xyna_path = xyna_path.strip()
+  docker_cmd=['docker', 'exec', '-t', TMP_CONTAINER_NAME, 'bash', '-c', "cd " + xyna_path + "/server; ./xynafactory.sh status; while [[ $? -ne 0 ]]; do sleep 1s; ./xynafactory.sh status; done"]
+  subprocess.run(docker_cmd, shell=True, text=True, check=False)
+  docker_cmd=['docker', 'exec', '-t', TMP_CONTAINER_NAME, 'bash', '-c', xyna_path + "/server/xynafactory.sh listapplications | awk '(NR>1) { print $1 }'"]
+  app_names_str = subprocess.check_output(docker_cmd, shell=True, text=True)
+  app_names_str = app_names_str.replace("'", "")
+  app_names = app_names_str.splitlines()
+  return app_names
 
 
-def filter_apps(applist):
-  ret = []
-  for app in applist:
-    if app[0] in FILTERED_APPS:
-      continue
-    ret.append(app)
-  return ret
-
-
-def build_app_property_list_string_old(app_paths):
-  ret = ""
-  pathlist = app_paths.splitlines()
-  applist = []
-  for path in pathlist:
-    if "." in path:
-      name = get_app_name_from_file_name(path)
-      app = [name, path]
-      applist.append(app)
-  applist = filter_apps(applist)
-  applist = sorted(applist, key=lambda elem: elem[0])
-  for app in applist:
-    ret = ret + "APP_" + app[0] + "=FALSE    #" + app[1] + "\n"
-  return ret
-
-
-def build_app_property_list_string(app_paths):
+def build_app_property_list_string(app_paths: str) -> str:
   applist = XynaAppList(paths = app_paths)
+  filter_app_names = get_installed_app_names()
+  applist.filter_apps(filter_app_names)
   return applist.write_property_lines()
 
 
-def build_app_property_list_string_old(app_paths):
-  ret = ""
-  pathlist = app_paths.splitlines()
-  applist = []
-  for path in pathlist:
-    if "." in path:
-      name = get_app_name_from_file_name(path)
-      app = [name, path]
-      applist.append(app)
-  applist = filter_apps(applist)
-  applist = sorted(applist, key=lambda elem: elem[0])
-  for app in applist:
-    ret = ret + "APP_" + app[0] + "=FALSE    #" + app[1] + "\n"
-  return ret
-
-
-def parse_properties(prop_file_content):
-  ret = []
-  linelist = prop_file_content.splitlines()
-  for line in linelist:
-    nocomment = line.split("#")[0].strip()
-    if not "=" in nocomment:
-      continue
-    if nocomment.startswith("="):
-      continue
-    pos = nocomment.find("=")
-    part0 = nocomment[:pos]
-    part1 = nocomment[pos + 1:]
-    prop = [part0.strip(), part1.strip()]
-    ret.append(prop)
-  ret = sorted(ret, key=lambda elem: elem[0])
-  return ret
-
-
-def build_apps_to_install(applist: XynaAppList):
+def build_apps_to_install(applist: XynaAppList) -> str:
   ret = ""
   for app in applist.applist:
     if not app.install_flag:
@@ -379,66 +326,35 @@ def build_apps_to_install(applist: XynaAppList):
   return ret
 
 
-def gen_prop_file_content_old(image_name):
-  content = "# Created by " + os.path.basename(sys.argv[0])
-  content += " version " + SCRIPT_VERSION;
-  content += "\n\n"
-  content += PROP_NAME_BASE_IMAGE + "=" + image_name + "\n"
-  content += PROP_NAME_TARGET_IMAGE + "=my.project.image.1\n"
-  content += "\n\n"
-  content += "# Xyna Applications - Select which Xyna Application should be included.\n"
-  content += "# Including an application automatically installs all dependent applications.\n"
-  content += "\n"
-  pathstr = get_app_file_list_string(image_name)
-  propstr = build_app_property_list_string(pathstr)
-  content += propstr + "\n"
-  content += "\n"
-  return content
-
-
-def gen_prop_file_content(image_name):
+def gen_prop_file_content(image_name: str) -> str:
   content = PROP_FILE_HEADER.replace("###_BASE_IMAGE_###", image_name)
   content += "\n"
   content += PROP_FILE_APP_BLOCK_START
   content += "\n"
-  #pathstr = get_app_file_list_string(image_name)
-  ### fixme
-  #write_file("app_paths.tmp", pathstr)
-  pathstr = read_file("app_paths.tmp")
-  ###
+  pathstr = get_app_file_list_string()
   propstr = build_app_property_list_string(pathstr)
   content += propstr + "\n"
   content += "\n"
   return content
 
 
-def gen_prop_file(image_name, out_file):
+def gen_prop_file(image_name: str, out_file: str):
+  print("Loading xyna base docker image to determine applications list...", flush=True)
+  start_xyna_base_container(image_name)
   content = gen_prop_file_content(image_name)
+  drop_xyna_base_container()
   write_file(out_file, content)
 
 
-#def extract_prop_val(proplist, propname):
-#  for prop in proplist:
-#    if len(prop) != 2:
-#      continue
-#    if propname != prop[0]:
-#      continue
-#    return prop[1]
-#  return ""
-
-
-def gen_docker_file(prop_file, docker_file):
+def gen_docker_file(prop_file: str, docker_file: str):
   content = gen_docker_file_content(prop_file)
   write_file(docker_file, content)
 
 
-def gen_docker_file_content(prop_file: str):
+def gen_docker_file_content(prop_file: str) -> str:
   prop_content = read_file(prop_file)
-  #print(prop_content)
   proplist = PropertyList(lines = prop_content)
-  #print(proplist)
   applist = XynaAppList(properties = proplist)
-  #print(applist)
   apps = build_apps_to_install(applist)
   base_image = proplist.get_value(PROP_NAME_BASE_IMAGE)
   target_image = proplist.get_value(PROP_NAME_TARGET_IMAGE)
@@ -449,7 +365,7 @@ def gen_docker_file_content(prop_file: str):
   return ret
 
 
-def read_param(name):
+def read_param(name: str) -> str:
   if not name.startswith("-"):
     name = "-" + name
   arglist = sys.argv[1:]
@@ -483,46 +399,3 @@ def main():
 
 
 main()
-
-#val1 = "abc"
-#pos = val1.find("c")
-#print(pos, len(val1), val1.find("x"))
-
-#lines = read_file("project.properties.v3")
-#lines = read_file("app_paths.tmp")
-#applist = XynaAppList(property_lines=lines)
-#applist = XynaAppList(paths=lines)
-#print(applist)
-
-
-def test_apps_1():
-  app1 = XynaApp(path="my-app-1.app")
-  print(app1)
-  app2 = XynaApp(path="/xx/yy/my-app-2.app")
-  print(app2)
-  line = app2.write_prop_file_line()
-  print(line)
-  line = line.replace("FALSE", "TRUE")
-  line = line.replace("2", "3")
-  app3 = XynaApp(prop_line=line)
-  print(app3)
-  app4 = XynaApp()
-  print(app4)
-
-
-#var1 = "abc"
-#print(var1, len(var1))
-#var1 += "xy"
-#print(var1, len(var1))
-
-
-
-#app1 = XynaApp("my-app-1", "p1")
-#app2 = XynaApp("my-app-2", "p2")
-#print(app1, app2)
-
-#vara = {}
-#print(type(vara))
-#varb= []
-#print(type(varb))
-

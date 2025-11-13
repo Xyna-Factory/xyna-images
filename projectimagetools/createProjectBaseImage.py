@@ -78,48 +78,90 @@ CMD ["/k8s/xyna/factory.sh"]
 """
 
 
-class XynaAppList:
-  def __init__(self, paths: str = None, properties: str = None):
-    self.applist = []
-    if paths is not None:
-      self.init_by_paths(paths)
-    elif properties is not None:
-      self.init_by_properties(properties)
-    if len(self.applist) > 0:
-      self.applist = sorted(self.applist, key=lambda elem: elem.name)
+class Property:
+  def __init__(self, line: str = None):
+    self.valid = False
+    self.key = ""
+    self.value = ""
+    self.comment = ""
+    if line is not None:
+      self.init_by_line(line)
 
-  def init_by_paths(self, paths: str):
-    linelist = paths.splitlines()
-    for line in linelist:
-      app = XynaApp(path = line)
-      if app.valid:
-        self.applist.append(app)
+  def init_by_line(self, line_in: str):
+    line = line_in.strip()
+    comment = ""
+    nocomment = line
+    index = line.find("#")
+    if index > 0 and index < len(line) - 1:
+      comment = line[index + 1:].strip()
+      nocomment = line[:index].strip()
+    index = nocomment.find("=")
+    if index <= 0:
+      return
+    elif index == len(nocomment) - 1:
+      return
+    self.key = nocomment[:index].strip()
+    self.value = nocomment[index + 1:].strip()
+    self.valid = True
+    self.comment = comment
 
-  def init_by_properties(self, props: str):
-    linelist = props.splitlines()
+  def write_prop_file_line(self) -> str:
+    if not self.valid:
+      return ""
+    return self.key + "=" + self.value + " # " + self.comment
+
+  def __str__(self) -> str:
+    return "key=" + self.key + ", value=" + self.value + ", valid=" + str(self.valid)
+### end of class declaration
+
+
+class PropertyList:
+  def __init__(self, lines: str = None):
+    self.properties = []
+    if lines is not None:
+      self.init_by_lines(lines)
+    if len(self.properties) > 0:
+      self.properties = sorted(self.properties, key=lambda elem: elem.key)
+
+  def init_by_lines(self, lineliststr: str):
+    linelist = lineliststr.splitlines()
     for line in linelist:
-      app = XynaApp(prop_line = line)
-      if app.valid:
-        self.applist.append(app)
+      prop = Property(line = line)
+      if prop.valid:
+        self.properties.append(prop)
+
+  def get_by_key(self, key: str) -> Property:
+    if key is None:
+      return None
+    for prop in self.properties:
+      if prop.valid and key == prop.key:
+        return prop
+    return None
+
+  def get_value(self, key: str) -> str:
+    prop = self.get_by_key(key)
+    if prop is None:
+      return ""
+    return prop.value
 
   def __str__(self) -> str:
     ret = ""
-    for app in self.applist:
-      ret += str(app) + "\n"
+    for prop in self.properties:
+      ret += str(prop) + "\n"
     return ret
 ### end of class declaration
 
 
 class XynaApp:
-  def __init__(self, path: str = None, prop_line: str = None):
+  def __init__(self, path: str = None, property: Property = None):
     self.valid = False
     self.name = ""
     self.path = ""
     self.install_flag = False
     if path is not None:
       self.init_by_path(path)
-    elif prop_line is not None:
-      self.init_by_prop_line(prop_line)
+    elif property is not None and property.valid:
+      self.init_by_property(property)
 
   def init_by_path(self, path_in: str):
     path = path_in.strip()
@@ -136,36 +178,27 @@ class XynaApp:
     self.path = path
     self.valid = True
 
-  def init_by_prop_line(self, line_in: str):
-    line = line_in.strip()
-    if not line_in.startswith("APP_"):
+  def init_by_property(self, prop: Property):
+    if not prop.key.startswith("APP_"):
       return
-    index = line.find("#")
-    if index < 0:
+    if prop.comment is None:
       return
-    if line.endswith("#"):
+    if len(prop.comment) < 1:
       return
-    path = line[index + 1:].strip()
-    nocomment = line[:index].strip()
-    if not "=" in nocomment:
-      return
-    if nocomment.startswith("="):
-      return
-    if nocomment.endswith("="):
-      return
-    index = nocomment.find("=")
-    part0 = nocomment[:index].strip()
+    path = prop.comment.strip()
+    part0 = prop.key
     if not part0.startswith("APP_"):
       return
     name = part0[4:].strip()
     if len(name) < 1:
       return
-    part1 = nocomment[index + 1:].strip()
-    if len(part1) < 1:
+    if prop.value is None:
       return
-    if part1.lower() == "true":
+    if len(prop.value) < 1:
+      return
+    if prop.value.lower() == "true":
       self.install_flag = True
-    self.path = path
+    self.path = prop.comment
     self.name = name
     self.valid = True
 
@@ -177,6 +210,50 @@ class XynaApp:
   def __str__(self) -> str:
     return "valid=" + str(self.valid) + ", name=" + self.name + ", path=" + self.path + ", install_flag=" + str(self.install_flag)
 ### end of class declaration
+
+
+class XynaAppList:
+  def __init__(self, paths: str = None, properties: PropertyList = None, property_lines: str = None):
+    self.applist = []
+    if paths is not None:
+      self.init_by_paths(paths)
+    elif property_lines is not None:
+      self.init_by_property_lines(property_lines)
+    elif properties is not None:
+      self.init_by_properties(properties)
+    if len(self.applist) > 0:
+      self.applist = sorted(self.applist, key=lambda elem: elem.name)
+
+  def init_by_paths(self, paths: str):
+    linelist = paths.splitlines()
+    for line in linelist:
+      app = XynaApp(path = line)
+      if app.valid:
+        self.applist.append(app)
+
+  def init_by_property_lines(self, lines: str):
+    proplist = PropertyList(lines = lines)
+    self.init_by_properties(proplist)
+
+  def init_by_properties(self, proplist: PropertyList):
+    for prop in proplist.properties:
+      app = XynaApp(property = prop)
+      if app.valid:
+        self.applist.append(app)
+
+  def write_property_lines(self) -> str:
+    ret = ""
+    for app in self.applist:
+      ret += app.write_prop_file_line() + "\n"
+    return ret
+
+  def __str__(self) -> str:
+    ret = ""
+    for app in self.applist:
+      ret += str(app) + "\n"
+    return ret
+### end of class declaration
+
 
 
 def read_file(name: str) -> str:
@@ -255,6 +332,11 @@ def build_app_property_list_string_old(app_paths):
 
 
 def build_app_property_list_string(app_paths):
+  applist = XynaAppList(paths = app_paths)
+  return applist.write_property_lines()
+
+
+def build_app_property_list_string_old(app_paths):
   ret = ""
   pathlist = app_paths.splitlines()
   applist = []
@@ -288,19 +370,12 @@ def parse_properties(prop_file_content):
   return ret
 
 
-def build_apps_to_install(proplist):
+def build_apps_to_install(applist: XynaAppList):
   ret = ""
-  for prop in proplist:
-    if len(prop) != 2:
+  for app in applist.applist:
+    if not app.install_flag:
       continue
-    propname = prop[0]
-    if not propname.startswith("APP_"):
-      continue
-    propval = prop[1].lower()
-    if propval != "true":
-      continue
-    appname = propname.removeprefix("APP_")
-    ret += APP_LINE + appname + " \\" + "\n"
+    ret += APP_LINE + app.name + " \\" + "\n"
   return ret
 
 
@@ -342,14 +417,14 @@ def gen_prop_file(image_name, out_file):
   write_file(out_file, content)
 
 
-def extract_prop_val(proplist, propname):
-  for prop in proplist:
-    if len(prop) != 2:
-      continue
-    if propname != prop[0]:
-      continue
-    return prop[1]
-  return ""
+#def extract_prop_val(proplist, propname):
+#  for prop in proplist:
+#    if len(prop) != 2:
+#      continue
+#    if propname != prop[0]:
+#      continue
+#    return prop[1]
+#  return ""
 
 
 def gen_docker_file(prop_file, docker_file):
@@ -357,12 +432,16 @@ def gen_docker_file(prop_file, docker_file):
   write_file(docker_file, content)
 
 
-def gen_docker_file_content(prop_file):
+def gen_docker_file_content(prop_file: str):
   prop_content = read_file(prop_file)
-  proplist = parse_properties(prop_content)
-  apps = build_apps_to_install(proplist)
-  base_image = extract_prop_val(proplist, PROP_NAME_BASE_IMAGE)
-  target_image = extract_prop_val(proplist, PROP_NAME_TARGET_IMAGE)
+  #print(prop_content)
+  proplist = PropertyList(lines = prop_content)
+  #print(proplist)
+  applist = XynaAppList(properties = proplist)
+  #print(applist)
+  apps = build_apps_to_install(applist)
+  base_image = proplist.get_value(PROP_NAME_BASE_IMAGE)
+  target_image = proplist.get_value(PROP_NAME_TARGET_IMAGE)
   ret = DOCKER_TEMPLATE
   ret = ret.replace("###_BASE_IMAGE_###", base_image)
   ret = ret.replace("###_TARGET_IMAGE_###", target_image)
@@ -403,13 +482,17 @@ def main():
     usage()
 
 
-#main()
+main()
+
+#val1 = "abc"
+#pos = val1.find("c")
+#print(pos, len(val1), val1.find("x"))
 
 #lines = read_file("project.properties.v3")
-lines = read_file("app_paths.tmp")
-#applist = XynaAppList(properties=lines)
-applist = XynaAppList(paths=lines)
-print(applist)
+#lines = read_file("app_paths.tmp")
+#applist = XynaAppList(property_lines=lines)
+#applist = XynaAppList(paths=lines)
+#print(applist)
 
 
 def test_apps_1():

@@ -25,8 +25,6 @@ TMP_CONTAINER_NAME='tmp.xyna.container.0'
 PROP_NAME_BASE_IMAGE="BASE_IMAGE"
 PROP_NAME_TARGET_IMAGE="TARGET_BASE_IMAGE"
 
-#FILTERED_APPS=["Base", "FileMgmt", "GlobalApplicationMgmt", "Node", "Processing"]
-
 APP_LINE=r'  && printf "0\n" | /tmp/XynaBlackEdition/install_black_edition.sh -x '
 
 

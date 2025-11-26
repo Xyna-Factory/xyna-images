@@ -19,17 +19,24 @@
 import subprocess
 import sys
 import os
+import configparser
 
 SCRIPT_VERSION='0.0.1'
 TMP_CONTAINER_NAME='tmp.xyna.container.0'
 PROP_NAME_BASE_IMAGE="BASE_IMAGE"
 PROP_NAME_TARGET_IMAGE="TARGET_BASE_IMAGE"
+PROP_VALUE_TARGET_IMAGE="my.project.image.1"
+SECTION_NAME_HEADER="header"
+SECTION_NAME_APPS="applications"
+SECTION_NAME_APP_LIST="applications_list"
 
-APP_LINE=r'  && printf "0\n" | /tmp/XynaBlackEdition/install_black_edition.sh -x '
-
+APP_LINE=r'    printf "0\n" | /tmp/XynaBlackEdition/install_black_edition.sh -x '
 
 PROP_FILE_HEADER=f"""# Created by {os.path.basename(sys.argv[0])} version {SCRIPT_VERSION}
+"""
 
+## fixme
+"""
 {PROP_NAME_BASE_IMAGE}=###_BASE_IMAGE_###
 {PROP_NAME_TARGET_IMAGE}=my.project.image.1
 """
@@ -41,19 +48,24 @@ PROP_FILE_APP_BLOCK_START="""
 """
 
 
+CMDS_APPS_TEMPL=r"""
+RUN ${XYNA_PATH}/server/xynafactory.sh start && \
+###_APP_CMD_LIST_###
+    ${XYNA_PATH}/server/xynafactory.sh stop
+"""
+
+
 DOCKER_TEMPLATE=r"""
 ARG XYNABASE_IMAGE=###_BASE_IMAGE_###
 
 FROM ${XYNABASE_IMAGE} AS xyna-install-stage-1
 
 USER 4242:4242
+RUN /tmp/configlog.sh log_nonblock
 
-RUN /tmp/configlog.sh log_nonblock \
-  && ${XYNA_PATH}/server/xynafactory.sh start \
-###_COMMANDS_###  && ${XYNA_PATH}/server/xynafactory.sh stop
+###_ALL_COMMANDS_###
 
 USER root
-
 RUN find ${XYNA_PATH}/server/storage/ -iname '*.journal' \
     && find ${XYNA_PATH}/server/storage/ -iname '*.journal' -print0 | xargs -0 rm
 
@@ -74,7 +86,7 @@ ENV HOSTNAME=xynaContainer
 CMD ["/k8s/xyna/factory.sh"]
 """
 
-
+'''
 class Property:
   def __init__(self, line: str = None):
     self.valid = False
@@ -147,6 +159,28 @@ class PropertyList:
       ret += str(prop) + "\n"
     return ret
 ### end of class declaration
+'''
+
+
+class Property:
+  def __init__(self, key: str, value: str):
+    self.valid = False
+    self.key = ""
+    self.value = ""
+    if key is None:
+      return
+    key = key.strip()
+    if len(key) < 1:
+      return
+    if value is None:
+      return
+    value = value.strip()
+    if len(value) < 1:
+      return
+    self.key = key
+    self.value = value
+    self.valid = True
+### end of class declaration
 
 
 class XynaApp:
@@ -167,42 +201,53 @@ class XynaApp:
     if not path.endswith(".app"):
       return
     parts = path.split("/")
-    parts = parts[-1].split(".")
+    filename = parts[-1]
+    parts = filename.split(".")
     name = parts[0].strip()
     if len(name) < 1:
       return
     self.name = name
-    self.path = path
+    self.path = filename
     self.valid = True
 
   def init_by_property(self, prop: Property):
-    if not prop.key.startswith("APP_"):
-      return
-    if prop.comment is None:
-      return
-    if len(prop.comment) < 1:
-      return
-    path = prop.comment.strip()
-    part0 = prop.key
-    if not part0.startswith("APP_"):
-      return
-    name = part0[4:].strip()
-    if len(name) < 1:
+    if not prop.key.lower().startswith("app_"):
       return
     if prop.value is None:
       return
-    if len(prop.value) < 1:
+    value = prop.value.strip()
+    #print("prop-value: ", value)
+    path = ""
+    index = value.find("#")
+    if index > 0 and index < len(value) - 1:
+      path = value[index + 1:].strip()
+      value = value[:index].strip()
+    #part0 = prop.key
+    #if not part0.lower().startswith("APP_"):
+    #  return
+    #name = part0[4:].strip()
+
+    parts = path.split("/")
+    filename = parts[-1]
+    parts = filename.split(".")
+    name = parts[0].strip()
+    if len(name) < 1:
       return
-    if prop.value.lower() == "true":
+    if value is None:
+      return
+    if len(value) < 1:
+      return
+    if value.lower() == "true":
       self.install_flag = True
-    self.path = prop.comment
+    self.path = path
     self.name = name
     self.valid = True
 
-  def write_prop_file_line(self) -> str:
-    if not self.valid:
-      return ""
-    return "APP_" + self.name + "=FALSE    #" + self.path
+  def to_dict_value(self) -> str:
+    return str(self.install_flag) + "    #" + self.path
+
+  def to_dict_key(self) -> str:
+    return "APP_" + self.name
 
   def __str__(self) -> str:
     return "valid=" + str(self.valid) + ", name=" + self.name + ", path=" + self.path + ", install_flag=" + str(self.install_flag)
@@ -210,14 +255,12 @@ class XynaApp:
 
 
 class XynaAppList:
-  def __init__(self, paths: str = None, properties: PropertyList = None, property_lines: str = None):
+  def __init__(self, paths: str = None, config: configparser.ConfigParser = None):
     self.applist = []
     if paths is not None:
       self.init_by_paths(paths)
-    elif property_lines is not None:
-      self.init_by_property_lines(property_lines)
-    elif properties is not None:
-      self.init_by_properties(properties)
+    elif config is not None:
+      self.init_by_config(config)
     if len(self.applist) > 0:
       self.applist = sorted(self.applist, key=lambda elem: elem.name)
 
@@ -228,12 +271,10 @@ class XynaAppList:
       if app.valid:
         self.applist.append(app)
 
-  def init_by_property_lines(self, lines: str):
-    proplist = PropertyList(lines = lines)
-    self.init_by_properties(proplist)
-
-  def init_by_properties(self, proplist: PropertyList):
-    for prop in proplist.properties:
+  def init_by_config(self, config: configparser.ConfigParser):
+    dict = config[SECTION_NAME_APP_LIST]
+    for key in dict.keys():
+      prop = Property(key=key, value=dict[key])
       app = XynaApp(property = prop)
       if app.valid:
         self.applist.append(app)
@@ -246,10 +287,10 @@ class XynaAppList:
       ret.append(app)
     self.applist = ret
 
-  def write_property_lines(self) -> str:
-    ret = ""
+  def to_dict(self) -> dict:
+    ret = {}
     for app in self.applist:
-      ret += app.write_prop_file_line() + "\n"
+      ret[app.to_dict_key()] = app.to_dict_value()
     return ret
 
   def __str__(self) -> str:
@@ -269,6 +310,11 @@ def read_file(name: str) -> str:
 def write_file(name: str, content: str):
   with open(name, "w") as f:
     f.write(content)
+
+
+def write_config_file(name: str, config: configparser.ConfigParser):
+  with open(name, "w") as f:
+    config.write(f)
 
 
 def does_container_exist(name: str) -> bool:
@@ -308,22 +354,33 @@ def get_installed_app_names() -> str:
   return app_names
 
 
-def build_app_property_list_string(app_paths: str) -> str:
+def build_app_dict_from_paths(app_paths: str) -> dict:
   applist = XynaAppList(paths = app_paths)
   filter_app_names = get_installed_app_names()
   applist.filter_apps(filter_app_names)
-  return applist.write_property_lines()
+  #dictionary = {}
+  #dictionary["#"] = PROP_FILE_APP_BLOCK_START
+  #dictionary[PROP_FILE_APP_BLOCK_START] = ""
+  return applist.to_dict()
 
 
-def build_apps_to_install(applist: XynaAppList) -> str:
+def build_apps_to_install_string(applist: XynaAppList) -> str:
   ret = ""
+  isfirst = True
   for app in applist.applist:
     if not app.install_flag:
       continue
-    ret += APP_LINE + app.name + " \\" + "\n"
+    if isfirst:
+      isfirst = False
+    else:
+      ret += " && \\  \n"
+    ret += APP_LINE + app.name
+  if isfirst:
+    ret += "    echo 'no apps to install'"
+  ret += " && \\"
   return ret
 
-
+'''
 def gen_prop_file_content(image_name: str) -> str:
   content = PROP_FILE_HEADER.replace("###_BASE_IMAGE_###", image_name)
   content += "\n"
@@ -334,14 +391,38 @@ def gen_prop_file_content(image_name: str) -> str:
   content += propstr + "\n"
   content += "\n"
   return content
+'''
+
+def gen_prop_content(image_name: str) -> configparser.ConfigParser:
+  #config = configparser.ConfigParser(allow_no_value=True, allow_unnamed_section=True)
+  config = configparser.ConfigParser(allow_no_value=True)
+  firstline = PROP_FILE_HEADER.replace("###_BASE_IMAGE_###", image_name)
+  #header = {}
+  config[SECTION_NAME_HEADER] = {}
+  config.set(SECTION_NAME_HEADER, firstline)
+  config.set(SECTION_NAME_HEADER, PROP_NAME_BASE_IMAGE, image_name)
+  config.set(SECTION_NAME_HEADER, PROP_NAME_TARGET_IMAGE, PROP_VALUE_TARGET_IMAGE)
+  config[SECTION_NAME_APPS] = {}
+  config.set(SECTION_NAME_APPS, PROP_FILE_APP_BLOCK_START)
+  pathstr = get_app_file_list_string()
+  apps = build_app_dict_from_paths(pathstr)
+  config[SECTION_NAME_APP_LIST] = apps
+  return config
 
 
 def gen_prop_file(image_name: str, out_file: str):
   print("Loading xyna base docker image to determine applications list...", flush=True)
   start_xyna_base_container(image_name)
-  content = gen_prop_file_content(image_name)
+  #content = gen_prop_file_content(image_name)
+  try:
+    content = gen_prop_content(image_name)
+  except:
+    print("Unexpected error:", sys.exc_info()[0])
+    drop_xyna_base_container()
+    raise
   drop_xyna_base_container()
-  write_file(out_file, content)
+  #write_file(out_file, content)
+  write_config_file(out_file, content)
 
 
 def gen_docker_file(prop_file: str, docker_file: str):
@@ -349,17 +430,32 @@ def gen_docker_file(prop_file: str, docker_file: str):
   write_file(docker_file, content)
 
 
+def gen_apps_cmds_string(config: configparser.ConfigParser) -> str:
+  applist = XynaAppList(config = config)
+  apps = build_apps_to_install_string(applist)
+  return CMDS_APPS_TEMPL.replace("###_APP_CMD_LIST_###", apps)
+
+
+def gen_commands_string(config: configparser.ConfigParser) -> str:
+  commands = ""
+  apps_cmds = gen_apps_cmds_string(config)
+  commands += apps_cmds
+  ### insert additional command blocks here
+  return commands
+
+
 def gen_docker_file_content(prop_file: str) -> str:
-  prop_content = read_file(prop_file)
-  proplist = PropertyList(lines = prop_content)
-  applist = XynaAppList(properties = proplist)
-  apps = build_apps_to_install(applist)
-  base_image = proplist.get_value(PROP_NAME_BASE_IMAGE)
-  target_image = proplist.get_value(PROP_NAME_TARGET_IMAGE)
+  config = configparser.ConfigParser(allow_no_value=True, comment_prefixes=(';'))
+  config.read(prop_file)
+  #proplist = PropertyList(lines = prop_content)
+  header = config[SECTION_NAME_HEADER]
+  base_image = header[PROP_NAME_BASE_IMAGE]
+  target_image = header[PROP_NAME_TARGET_IMAGE]
+  commands = gen_commands_string(config)
   ret = DOCKER_TEMPLATE
   ret = ret.replace("###_BASE_IMAGE_###", base_image)
   ret = ret.replace("###_TARGET_IMAGE_###", target_image)
-  ret = ret.replace("###_COMMANDS_###", apps)
+  ret = ret.replace("###_ALL_COMMANDS_###", commands)
   return ret
 
 

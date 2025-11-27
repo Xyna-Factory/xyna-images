@@ -28,24 +28,16 @@ PROP_NAME_TARGET_IMAGE="TARGET_BASE_IMAGE"
 PROP_VALUE_TARGET_IMAGE="my.project.image.1"
 SECTION_NAME_HEADER="header"
 SECTION_NAME_APPS="applications"
-SECTION_NAME_APP_LIST="applications_list"
+SECTION_NAME_APP_LIST="applications.list"
 
 APP_LINE=r'    printf "0\n" | /tmp/XynaBlackEdition/install_black_edition.sh -x '
 
 PROP_FILE_HEADER=f"""# Created by {os.path.basename(sys.argv[0])} version {SCRIPT_VERSION}
 """
 
-## fixme
-"""
-{PROP_NAME_BASE_IMAGE}=###_BASE_IMAGE_###
-{PROP_NAME_TARGET_IMAGE}=my.project.image.1
-"""
 
-
-PROP_FILE_APP_BLOCK_START="""
-# Xyna Applications - Select which Xyna Application should be included.
-# Including an application automatically installs all dependent applications.
-"""
+PROP_FILE_APP_BLOCK_START="""# Xyna Applications - Select which Xyna Application should be included.
+# Including an application automatically installs all dependent applications."""
 
 
 CMDS_APPS_TEMPL=r"""
@@ -85,81 +77,6 @@ USER 4242:4242
 ENV HOSTNAME=xynaContainer
 CMD ["/k8s/xyna/factory.sh"]
 """
-
-'''
-class Property:
-  def __init__(self, line: str = None):
-    self.valid = False
-    self.key = ""
-    self.value = ""
-    self.comment = ""
-    if line is not None:
-      self.init_by_line(line)
-
-  def init_by_line(self, line_in: str):
-    line = line_in.strip()
-    comment = ""
-    nocomment = line
-    index = line.find("#")
-    if index > 0 and index < len(line) - 1:
-      comment = line[index + 1:].strip()
-      nocomment = line[:index].strip()
-    index = nocomment.find("=")
-    if index <= 0:
-      return
-    elif index == len(nocomment) - 1:
-      return
-    self.key = nocomment[:index].strip()
-    self.value = nocomment[index + 1:].strip()
-    self.valid = True
-    self.comment = comment
-
-  def write_prop_file_line(self) -> str:
-    if not self.valid:
-      return ""
-    return self.key + "=" + self.value + " # " + self.comment
-
-  def __str__(self) -> str:
-    return "key=" + self.key + ", value=" + self.value + ", valid=" + str(self.valid)
-### end of class declaration
-
-
-class PropertyList:
-  def __init__(self, lines: str = None):
-    self.properties = []
-    if lines is not None:
-      self.init_by_lines(lines)
-    if len(self.properties) > 0:
-      self.properties = sorted(self.properties, key=lambda elem: elem.key)
-
-  def init_by_lines(self, lineliststr: str):
-    linelist = lineliststr.splitlines()
-    for line in linelist:
-      prop = Property(line = line)
-      if prop.valid:
-        self.properties.append(prop)
-
-  def get_by_key(self, key: str) -> Property:
-    if key is None:
-      return None
-    for prop in self.properties:
-      if prop.valid and key == prop.key:
-        return prop
-    return None
-
-  def get_value(self, key: str) -> str:
-    prop = self.get_by_key(key)
-    if prop is None:
-      return ""
-    return prop.value
-
-  def __str__(self) -> str:
-    ret = ""
-    for prop in self.properties:
-      ret += str(prop) + "\n"
-    return ret
-### end of class declaration
-'''
 
 
 class Property:
@@ -216,21 +133,15 @@ class XynaApp:
     if prop.value is None:
       return
     value = prop.value.strip()
-    #print("prop-value: ", value)
     path = ""
     index = value.find("#")
     if index > 0 and index < len(value) - 1:
       path = value[index + 1:].strip()
       value = value[:index].strip()
-    #part0 = prop.key
-    #if not part0.lower().startswith("APP_"):
-    #  return
-    #name = part0[4:].strip()
-
-    parts = path.split("/")
-    filename = parts[-1]
-    parts = filename.split(".")
-    name = parts[0].strip()
+    part0 = prop.key
+    if not part0.lower().startswith("app_"):
+      return
+    name = part0[4:].strip()
     if len(name) < 1:
       return
     if value is None:
@@ -358,9 +269,6 @@ def build_app_dict_from_paths(app_paths: str) -> dict:
   applist = XynaAppList(paths = app_paths)
   filter_app_names = get_installed_app_names()
   applist.filter_apps(filter_app_names)
-  #dictionary = {}
-  #dictionary["#"] = PROP_FILE_APP_BLOCK_START
-  #dictionary[PROP_FILE_APP_BLOCK_START] = ""
   return applist.to_dict()
 
 
@@ -380,24 +288,11 @@ def build_apps_to_install_string(applist: XynaAppList) -> str:
   ret += " && \\"
   return ret
 
-'''
-def gen_prop_file_content(image_name: str) -> str:
-  content = PROP_FILE_HEADER.replace("###_BASE_IMAGE_###", image_name)
-  content += "\n"
-  content += PROP_FILE_APP_BLOCK_START
-  content += "\n"
-  pathstr = get_app_file_list_string()
-  propstr = build_app_property_list_string(pathstr)
-  content += propstr + "\n"
-  content += "\n"
-  return content
-'''
 
 def gen_prop_content(image_name: str) -> configparser.ConfigParser:
-  #config = configparser.ConfigParser(allow_no_value=True, allow_unnamed_section=True)
   config = configparser.ConfigParser(allow_no_value=True)
+  config.optionxform = lambda option: option
   firstline = PROP_FILE_HEADER.replace("###_BASE_IMAGE_###", image_name)
-  #header = {}
   config[SECTION_NAME_HEADER] = {}
   config.set(SECTION_NAME_HEADER, firstline)
   config.set(SECTION_NAME_HEADER, PROP_NAME_BASE_IMAGE, image_name)
@@ -413,7 +308,6 @@ def gen_prop_content(image_name: str) -> configparser.ConfigParser:
 def gen_prop_file(image_name: str, out_file: str):
   print("Loading xyna base docker image to determine applications list...", flush=True)
   start_xyna_base_container(image_name)
-  #content = gen_prop_file_content(image_name)
   try:
     content = gen_prop_content(image_name)
   except:
@@ -421,7 +315,6 @@ def gen_prop_file(image_name: str, out_file: str):
     drop_xyna_base_container()
     raise
   drop_xyna_base_container()
-  #write_file(out_file, content)
   write_config_file(out_file, content)
 
 
@@ -446,8 +339,8 @@ def gen_commands_string(config: configparser.ConfigParser) -> str:
 
 def gen_docker_file_content(prop_file: str) -> str:
   config = configparser.ConfigParser(allow_no_value=True, comment_prefixes=(';'))
+  config.optionxform = lambda option: option
   config.read(prop_file)
-  #proplist = PropertyList(lines = prop_content)
   header = config[SECTION_NAME_HEADER]
   base_image = header[PROP_NAME_BASE_IMAGE]
   target_image = header[PROP_NAME_TARGET_IMAGE]

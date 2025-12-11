@@ -52,7 +52,7 @@ services:
       - xyna-pooldefinition:/pooldefinition
       - xyna-tmp:/tmp
       - xyna-revisions:/opt/xyna/xyna_001/revisions
-      - xyna-xmomreposisotiy:/opt/xyna/xyna_001/xmomrepository
+      - xyna-xmomrepository:/opt/xyna/xyna_001/xmomrepository
       - xyna-xnwhclasses:/opt/xyna/xyna_001/server/xnwhclasses
       - xyna-gen:/opt/xyna/xyna_001/server/gen
       - xyna-storage:/opt/xyna/xyna_001/server/storage
@@ -146,7 +146,7 @@ volumes:
   xyna-pooldefinition:
   xyna-tmp:
   xyna-revisions:
-  xyna-xmomreposisotiy:
+  xyna-xmomrepository:
   xyna-xnwhclasses:
   xyna-gen:
   xyna-storage:

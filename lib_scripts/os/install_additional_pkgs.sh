@@ -43,14 +43,14 @@ fi
 if [[ ${OS_IMAGE} == oraclelinux:* ]]; then
     yum -y update
     yum -y upgrade
-    yum install -y python3-devel
+    yum install -y python3-devel git
     yum clean all
 elif [[ ${OS_IMAGE} == redhat/ubi*:* ]]; then
-    dnf install -y python3-devel
+    dnf install -y python3-devel git
 elif [[ ${OS_IMAGE} == ubuntu:* ]]; then
     apt --no-install-recommends -y update
     apt -y upgrade
-    apt-get -y install wget xinetd bind9utils vim-tiny less libxml2-utils gnupg ca-certificates curl gcc systemd uuid-runtime
+    apt-get -y install wget xinetd bind9utils vim-tiny less libxml2-utils gnupg ca-certificates curl gcc systemd uuid-runtime git
     apt-get -y install python3-dev python3-venv python3-pip
 else
     echo "Warning: unsupported OS_IMAGE=${OS_IMAGE}"

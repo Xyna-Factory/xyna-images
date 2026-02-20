@@ -25,7 +25,9 @@ fi
 
 if [ $# -eq 3 ]
 then
-  rsync -ruvn $1 $2 | grep "^APP_[^/]*/$" | sed 's|\(APP_\)\(.*\)=\(.*\)/|\1\2=\3 \2/\3|' >> $3
+  while IFS= read -r line; do
+    grep -Fxq "$line" "$3" || echo "$line" >> "$3"
+  done < "$1/runtimecontexts"
   rsync -ruv $1 $2
 elif [ $# -eq 4 ] && [ $1 == "-d" ]
 then

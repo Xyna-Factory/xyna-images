@@ -15,8 +15,8 @@
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # syntax=docker/dockerfile:1
-ARG XYNABASE=xynafactory/xynabase:latest
-FROM ${XYNABASE}
+ARG XYNABASE_IMAGE=xynafactory/xynabase:latest
+FROM ${XYNABASE_IMAGE}
 
 ARG OS_IMAGE
 

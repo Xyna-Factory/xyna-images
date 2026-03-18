@@ -25,6 +25,8 @@ services:
       - MARIADB_USER=${MARIADB_USER}
       - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
       - MARIADB_PASSWORD=${MARIADB_PASSWORD}
+    volumes:
+      - mariadb-mysql:/var/lib/mysql
     expose:
       - ${MARIADB_PORT}
     healthcheck:
@@ -150,3 +152,4 @@ volumes:
   xyna-xnwhclasses:
   xyna-gen:
   xyna-storage:
+  mariadb-mysql:

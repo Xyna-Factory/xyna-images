@@ -61,18 +61,11 @@ do_install_python_venv() {
   deactivate
   rm -rf ~/.cache/pip
   local _JEP_PATH=$( find "${_VENV_PATH}" -name 'libjep.so' )
-  cat "${_XYNA_PATH}/server/server.policy"
-  cat "$BLACK_ED_ETC_PROP_FILE_PATH"
-  ls -lat "$BLACK_ED_ETC_PROP_FILE_PATH"
-  ls -lat "$_VENV_PATH"
-  sed -i "s#//permission java.lang.RuntimePermission \"loadLibrary.TOKEN_PATH_TO_LIB\";#permission java.lang.RuntimePermission \"loadLibrary.${_JEP_PATH}\";#" ${_XYNA_PATH}/server/server.policy
+  if [[ -f ${_XYNA_PATH}/server/server.policy ]]; then
+    sed -i "s#//permission java.lang.RuntimePermission \"loadLibrary.TOKEN_PATH_TO_LIB\";#permission java.lang.RuntimePermission \"loadLibrary.${_JEP_PATH}\";#" ${_XYNA_PATH}/server/server.policy
+  fi
   adapt_env_property "jep.module.path" "${_JEP_PATH}"
   adapt_env_property "python.venv.path" "${_VENV_PATH}"
-  cat "${_XYNA_PATH}/server/server.policy"
-  cat "$BLACK_ED_ETC_PROP_FILE_PATH"
-  ls -lat "$BLACK_ED_ETC_PROP_FILE_PATH"
-  ls -lat "$_VENV_PATH"
-  find "$_VENV_PATH" -iname '*.jar'
 }
 
 XYNA_PATH=$( awk -F= '{ if ($1 == "installation.folder") print $2}' "$BLACK_ED_ETC_PROP_FILE_PATH" )

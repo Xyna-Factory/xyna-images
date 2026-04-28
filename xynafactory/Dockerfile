@@ -81,7 +81,5 @@ find /opt/xyna/xyna_001/storage -name "*.journal" | xargs --no-run-if-empty rm
 /k8s/xyna/xmomrepository_adjust_revision_history.sh ${XMOMREPOSITORY}
 EOF
 
-RUN cat ${XYNA_PATH}/server/server.policy && cat /etc/opt/xyna/environment/black_edition_001.properties
-
 ENV SYNC_CONTAINER_LIFECYCLE_TO_FACTORY=true
 CMD /tmp/init.sh

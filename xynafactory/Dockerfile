@@ -53,10 +53,15 @@ RUN <<-EOF
 /tmp/configlog.sh log_nonblock
 ${XYNAFACTORY_SH} start
 printf "0\n" |${INSTALL_BLACKEDITION} -x FileMgmt
+rm tmp/XynaBlackEdition/$(hostname)/*
 printf "0\n" |${INSTALL_BLACKEDITION} -x SNMPStatistics
+rm tmp/XynaBlackEdition/$(hostname)/*
 printf "0\n" |${INSTALL_BLACKEDITION} -x UserSessionMgmt
+rm tmp/XynaBlackEdition/$(hostname)/*
 printf "0\n" |${INSTALL_BLACKEDITION} -x GitIntegration
+rm tmp/XynaBlackEdition/$(hostname)/*
 ${INSTALL_BLACKEDITION} -x ActiveMQ,BatchProcessMgmt,CSV,CapacityMgmt,Connection,Crypto,GuiHttp,Http,IOSDevice,IOSXEDevice,IOSXRDevice,Json,JunOSDevice,LDAP,Mail,Net,Node,OAS_Base,OneOSDevice,Queue,RegExp,SNMP,SOAP,SSH,SSHFile,SSHServer,SSHTools,ScriptExecutor,StorableOperations,Telnet,Timeseries,UserRoleManagement,XynaPropertyMgmt,YangAppGenerator,YangBase
+rm tmp/XynaBlackEdition/$(hostname)/*
 ${XYNAFACTORY_SH} addconnectionpool -connectstring jdbc:mariadb://placeholder/xyna -name Xyna-Infra-Pool -size 10 -type Mock_MySQL -user placeholder -password placeholder
 ${XYNAFACTORY_SH} instantiatepersistencelayer -persistenceLayerName mysql -department xyna -connectionType DEFAULT -persistenceLayerInstanceName Xyna-Infra-Default-Inst -persistenceLayerSpecifics Xyna-Infra-Pool 4000 zippedBlobs=true
 ${XYNAFACTORY_SH} instantiatepersistencelayer -persistenceLayerName mysql -department xyna -connectionType HISTORY -persistenceLayerInstanceName Xyna-Infra-History-Inst -persistenceLayerSpecifics Xyna-Infra-Pool 4000 zippedBlobs=true

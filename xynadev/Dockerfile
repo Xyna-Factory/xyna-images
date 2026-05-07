@@ -1,5 +1,5 @@
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Copyright 2023 Xyna GmbH, Germany
+# Copyright 2026 Xyna GmbH, Germany
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -55,7 +55,8 @@ RUN ${XYNA_PATH}/server/xynafactory.sh start \
 
 
 # prepare revisions, server and xmomrepository folder - mount persistent volume on ${XYNA_PATH}
-RUN cp -r ${XYNA_PATH} ${XYNA_PATH}/../xyna_image
+RUN cp -r ${XYNA_PATH} ${XYNA_PATH}/../xyna_image \
+  && mkdir ${XYNA_PATH}/../git
 
 USER 4242:4242
 ENV HOSTNAME=xynaContainer

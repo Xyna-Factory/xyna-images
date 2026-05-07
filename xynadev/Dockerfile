@@ -56,7 +56,7 @@ RUN ${XYNA_PATH}/server/xynafactory.sh start \
 
 # prepare revisions, server and xmomrepository folder - mount persistent volume on ${XYNA_PATH}
 RUN cp -r ${XYNA_PATH} ${XYNA_PATH}/../xyna_image \
-  && mkdir ${XYNA_PATH}/../git
+  && mkdir ${XYNA_PATH}/git
 
 USER 4242:4242
 ENV HOSTNAME=xynaContainer

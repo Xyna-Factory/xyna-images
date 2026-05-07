@@ -84,7 +84,7 @@ ${XYNAFACTORY_SH} stop
 find /opt/xyna/xyna_001/storage -name "*.journal" | xargs --no-run-if-empty rm
 /k8s/xyna/xmomrepository_adjust_revision.sh ${XMOMREPOSITORY}
 /k8s/xyna/xmomrepository_adjust_revision_history.sh ${XMOMREPOSITORY}
-mkdir ${XYNA_PATH}/../git
+mkdir /opt/xyna/xyna_001/git
 EOF
 
 ENV SYNC_CONTAINER_LIFECYCLE_TO_FACTORY=true

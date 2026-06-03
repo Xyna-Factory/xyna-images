@@ -1,5 +1,5 @@
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Copyright 2024 Xyna GmbH, Germany
+# Copyright 2026 Xyna GmbH, Germany
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -84,6 +84,7 @@ ${XYNAFACTORY_SH} stop
 find /opt/xyna/xyna_001/storage -name "*.journal" | xargs --no-run-if-empty rm
 /k8s/xyna/xmomrepository_adjust_revision.sh ${XMOMREPOSITORY}
 /k8s/xyna/xmomrepository_adjust_revision_history.sh ${XMOMREPOSITORY}
+mkdir /opt/xyna/xyna_001/git
 EOF
 
 ENV SYNC_CONTAINER_LIFECYCLE_TO_FACTORY=true

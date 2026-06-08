@@ -51,7 +51,7 @@ function f_determine_tag_position() {
   re='^[0-9]+$'
   if ! [[ $FROM =~ $re ]] ; then
     FROM=$(grep -n "</userarchiveTable>" "$XMLFILEPATH" | cut -d: -f1) # current position of closing userarchiveTable tag
-    if ! [[ $FOM =~ $re ]]; then
+    if ! [[ $FROM =~ $re ]]; then
       FROM=$(grep -n "<userarchiveTable" "$XMLFILEPATH" | cut -d: -f1)
       sed -i "$FROM s#\"/>#\">#" "$XMLFILEPATH"
       FROM=$((FROM+1))

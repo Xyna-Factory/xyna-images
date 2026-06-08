@@ -37,6 +37,10 @@ if [[ -z ${JAVA_VERSION} ]]; then
     usage
 fi
 
+if [[ ${JAVA_VERSION} == 25 ]]; then
+    sed -ie "/jvm.option.additional=/s/$/ --add-opens java.base\/java.lang=ALL-UNNAMED --add-opens java.base\/java.util.concurrent=ALL-UNNAMED --add-opens java.base\/java.io=ALL-UNNAMED/g" /etc/opt/xyna/environment/black_edition_001.properties
+    exit 0
+fi
 
 if [[ ${JAVA_VERSION} == 2* ]]; then
     sed -ie "/jvm.option.additional=/s/$/ -Djava.security.manager=allow --add-opens java.base\/java.lang=ALL-UNNAMED --add-opens java.base\/java.util.concurrent=ALL-UNNAMED --add-opens java.base\/java.io=ALL-UNNAMED/g" /etc/opt/xyna/environment/black_edition_001.properties

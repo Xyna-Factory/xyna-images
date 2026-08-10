@@ -161,7 +161,7 @@ for PREFIX in "${PREFIXES[@]}"; do
             SERVERLIBS+=$SERVERLIBFILEPATH":"
         done
         # process and set QUEUETYPE
-        PROCESSEDQUEUETYPE=$(java -classpath $SERVERLIBS com.gip.xyna.xmcp.xfcli.scriptentry.CreateBlobbedQueueData $QUEUETYPE)
+        PROCESSEDQUEUETYPE=$(java --add-opens java.base/java.io=ALL-UNNAMED -classpath $SERVERLIBS com.gip.xyna.xmcp.xfcli.scriptentry.CreateBlobbedQueueData $QUEUETYPE)
         NEWLINE=$(echo "$QUEUETYPELINE" | sed "s#<queueData>.*</queueData>#<queueData>$PROCESSEDQUEUETYPE</queueData>#")
         sed -i "$QUEUETYPEIDX s#.*#$NEWLINE#" "$XMLFILEPATH"
         echo "$0 INFO: set queuetype for queue $PREFIX"

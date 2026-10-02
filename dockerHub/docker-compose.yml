@@ -27,6 +27,7 @@ services:
       - MARIADB_PASSWORD=${MARIADB_PASSWORD}
     volumes:
       - mariadb-mysql:/var/lib/mysql
+      - ./initdb:/docker-entrypoint-initdb.d
     expose:
       - ${MARIADB_PORT}
     healthcheck:

@@ -60,8 +60,9 @@ printf "0\n" |${INSTALL_BLACKEDITION} -x UserSessionMgmt
 rm -r /tmp/XynaBlackEdition/*/installation_xyna_001_*.log
 printf "0\n" |${INSTALL_BLACKEDITION} -x GitIntegration
 rm -r /tmp/XynaBlackEdition/*/installation_xyna_001_*.log
-${INSTALL_BLACKEDITION} -x ActiveMQ,BatchProcessMgmt,CSV,CapacityMgmt,Connection,Crypto,GuiHttp,Http,IOSDevice,IOSXEDevice,IOSXRDevice,Json,JunOSDevice,LDAP,Mail,Net,Node,OAS_Base,OneOSDevice,Queue,RegExp,SNMP,SOAP,SSH,SSHFile,SSHServer,SSHTools,ScriptExecutor,StorableOperations,Telnet,Timeseries,UserRoleManagement,XynaPropertyMgmt,YangAppGenerator,YangBase
+${INSTALL_BLACKEDITION} -x ActiveMQ,BatchProcessMgmt,CSV,CapacityMgmt,Connection,Crypto,GuiHttp,Http,IOSDevice,IOSXEDevice,IOSXRDevice,Json,JunOSDevice,LDAP,Mail,Net,Node,OAS_Base,OneOSDevice,Queue,RegExp,SNMP,SOAP,SSH,SSHFile,SSHServer,SSHTools,ScriptExecutor,StorableOperations,Telnet,Timeseries,UserRoleManagement,XynaPropertyMgmt,YangAppGenerator,YangBase,McpServer,McpOasGeneration
 rm -r /tmp/XynaBlackEdition/*/installation_xyna_001_*.log
+/k8s/xyna/startapplication.sh McpServer
 ${XYNAFACTORY_SH} addconnectionpool -connectstring jdbc:mariadb://placeholder/xyna -name Xyna-Infra-Pool -size 10 -type Mock_MySQL -user placeholder -password placeholder
 ${XYNAFACTORY_SH} instantiatepersistencelayer -persistenceLayerName mysql -department xyna -connectionType DEFAULT -persistenceLayerInstanceName Xyna-Infra-Default-Inst -persistenceLayerSpecifics Xyna-Infra-Pool 4000 zippedBlobs=true
 ${XYNAFACTORY_SH} instantiatepersistencelayer -persistenceLayerName mysql -department xyna -connectionType HISTORY -persistenceLayerInstanceName Xyna-Infra-History-Inst -persistenceLayerSpecifics Xyna-Infra-Pool 4000 zippedBlobs=true
@@ -79,9 +80,12 @@ ${XYNAFACTORY_SH} set xnwh.persistence.xmom.defaulthistorypersistencelayerid $($
 ${XYNAFACTORY_SH} set xyna.default.monitoringlevel 20
 ${XYNAFACTORY_SH} set xmcp.guihttp.sts false
 ${XYNAFACTORY_SH} set xmcp.guihttp.csrf false
+mcpserver_version=$(${XYNAFACTORY_SH} listapplications | awk -F"'" '$2 == "McpServer" {print $4; exit}')
+oasmcp_version=$(${XYNAFACTORY_SH} listapplications | awk -F"'" '$2 == "McpOasGeneration" {print $4; exit}')
+${XYNAFACTORY_SH} addruntimecontextdependency -ownerApplicationName McpServer -ownerVersionName "${mcpserver_version}" -requirementApplicationName McpOasGeneration -requirementVersionName "${oasmcp_version}"
 ${XYNAFACTORY_SH} stop
 /tmp/configlog.sh stdout_nonblock
-find /opt/xyna/xyna_001/storage -name "*.journal" | xargs --no-run-if-empty rm
+find /opt/xyna/xyna_001/server/storage -name "*.journal" | xargs --no-run-if-empty rm
 /k8s/xyna/xmomrepository_adjust_revision.sh ${XMOMREPOSITORY}
 /k8s/xyna/xmomrepository_adjust_revision_history.sh ${XMOMREPOSITORY}
 mkdir /opt/xyna/xyna_001/git

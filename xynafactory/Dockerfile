@@ -82,6 +82,7 @@ ${XYNAFACTORY_SH} set xmcp.guihttp.csrf false
 mcpserver_version=$(${XYNAFACTORY_SH} listapplications | awk -F"'" '$2 == "McpServer" {print $4; exit}')
 oasmcp_version=$(${XYNAFACTORY_SH} listapplications | awk -F"'" '$2 == "McpOasGeneration" {print $4; exit}')
 ${XYNAFACTORY_SH} addruntimecontextdependency -ownerApplicationName McpServer -ownerVersionName "${mcpserver_version}" -requirementApplicationName McpOasGeneration -requirementVersionName "${oasmcp_version}"
+/k8s/xyna/startapplication.sh McpServer
 ${XYNAFACTORY_SH} stop
 /tmp/configlog.sh stdout_nonblock
 find /opt/xyna/xyna_001/server/storage -name "*.journal" | xargs --no-run-if-empty rm

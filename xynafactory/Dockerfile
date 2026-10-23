@@ -60,7 +60,7 @@ printf "0\n" |${INSTALL_BLACKEDITION} -x UserSessionMgmt
 rm -r /tmp/XynaBlackEdition/*/installation_xyna_001_*.log
 printf "0\n" |${INSTALL_BLACKEDITION} -x GitIntegration
 rm -r /tmp/XynaBlackEdition/*/installation_xyna_001_*.log
-${INSTALL_BLACKEDITION} -x ActiveMQ,BatchProcessMgmt,CSV,CapacityMgmt,Connection,Crypto,GuiHttp,Http,IOSDevice,IOSXEDevice,IOSXRDevice,Json,JunOSDevice,LDAP,Mail,Net,Node,OAS_Base,OneOSDevice,Queue,RegExp,SNMP,SOAP,SSH,SSHFile,SSHServer,SSHTools,ScriptExecutor,StorableOperations,Telnet,Timeseries,UserRoleManagement,XynaPropertyMgmt,YangAppGenerator,YangBase,McpOasGeneration
+${INSTALL_BLACKEDITION} -x ActiveMQ,BatchProcessMgmt,CSV,CapacityMgmt,Connection,Crypto,GuiHttp,Http,IOSDevice,IOSXEDevice,IOSXRDevice,Json,JunOSDevice,LDAP,Mail,Net,Node,OAS_Base,OneOSDevice,Queue,RegExp,SNMP,SOAP,SSH,SSHFile,SSHServer,SSHTools,ScriptExecutor,StorableOperations,Telnet,Timeseries,UserRoleManagement,XynaPropertyMgmt,YangAppGenerator,YangBase,McpServer,McpOasGeneration
 rm -r /tmp/XynaBlackEdition/*/installation_xyna_001_*.log
 ${XYNAFACTORY_SH} addconnectionpool -connectstring jdbc:mariadb://placeholder/xyna -name Xyna-Infra-Pool -size 10 -type Mock_MySQL -user placeholder -password placeholder
 ${XYNAFACTORY_SH} instantiatepersistencelayer -persistenceLayerName mysql -department xyna -connectionType DEFAULT -persistenceLayerInstanceName Xyna-Infra-Default-Inst -persistenceLayerSpecifics Xyna-Infra-Pool 4000 zippedBlobs=true

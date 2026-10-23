@@ -84,7 +84,7 @@ oasmcp_version=$(${XYNAFACTORY_SH} listapplications | awk -F"'" '$2 == "McpOasGe
 ${XYNAFACTORY_SH} addruntimecontextdependency -ownerApplicationName McpServer -ownerVersionName "${mcpserver_version}" -requirementApplicationName McpOasGeneration -requirementVersionName "${oasmcp_version}"
 ${XYNAFACTORY_SH} stop
 /tmp/configlog.sh stdout_nonblock
-find /opt/xyna/xyna_001/storage -name "*.journal" | xargs --no-run-if-empty rm
+find /opt/xyna/xyna_001/server/storage -name "*.journal" | xargs --no-run-if-empty rm
 /k8s/xyna/xmomrepository_adjust_revision.sh ${XMOMREPOSITORY}
 /k8s/xyna/xmomrepository_adjust_revision_history.sh ${XMOMREPOSITORY}
 mkdir /opt/xyna/xyna_001/git

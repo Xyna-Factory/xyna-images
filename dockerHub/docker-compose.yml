@@ -97,6 +97,7 @@ services:
     ports:
     # see https://docs.docker.com/engine/network/#published-ports
       - "8000-8010"
+      - "${MCP_PORT}:3000"
 
    modeller:
     image: ${MODELLER_IMAGE}
